@@ -2,33 +2,45 @@
  * 播放组件
  * @type {Object}
  */
-var videoPlayer = {
-    /**
+function videoPlayer(containerId){
+    this.containerId = containerId;
+    this.startTime = 0;
+    this.options = {
+        autoPlay : false,
+        onDataError : null,
+        onDataOk : null,
+        onEnd : null,
+        onUpdate : null
+
+    }
+}
+/**
      * 初始化播放组件
      * @param  {String} containerId    容器id
      * @param  {Object} options 配置信息
      * @return {}         [description]
      */
-    init:function(containerId,options){
-        this.containerId = containerId;
-        this.container = $("#"+this.containerId);
-        var _width = this.container.width();
-        var _height = _width * 9 / 16;
-        this.container.height(_height);
-        this.video = $(this.container).find("video")[0];
-        this.options = options;
-        this.userInfo = options.userInfo;
-        this.controlBtn = $(this.container).find(".play-btn")[0];
-        this.trigger = $(this.container).find(".video-trigger")[0];
-        this.mask = $(this.container).find(".video-mask")[0];
-        this.startPlay = false;
-        $(this.video).attr("preload","auto");
-        this.videoId = this.options.videoId;
-        this.getData();
-        this.requestTime = 0;
-        this.startTime = 0;
+videoPlayer.init  = function(containerId,options,data){
+    var instance = new videoPlayer(containerId);
+    instance.data = data;
+    instance.container = $("#"+containerId);
+    instance.width =  instance.container.width();
+    instance.height = instance.width * 9 / 16;
+    instance.container.height(instance.height);
+    instance.video = instance.container.find("video")[0];
+    instance.options = options;
+    //instance.userInfo = options.userInfo;
+    instance.controlBtn = $(instance.container).find(".play-btn")[0];
+    instance.trigger = $(instance.container).find(".video-trigger")[0];
+    instance.mask = $(instance.container).find(".video-mask")[0];
+    instance.startPlay = false;
+    $(instance.video).attr("preload","auto");
+    //instance.videoId = instance.options.videoId;
         //this.data = data;
-    },
+    instance.initData(data);
+    return instance;
+};
+videoPlayer.prototype = {
     changeVideo:function(data,videoId){
         this.dataIsok = false;
         this.startPlay = false;
@@ -38,14 +50,14 @@ var videoPlayer = {
         this.data = data;
     },
     initData:function(data,callback){
-       if(!data.result.result){
+       if(!data){
           //console.log("data result is error");
           if(this.options.onDataError){
             this.options.onDataError(data);
           }
        }else if(!this.dataIsok){
           this.dataIsok = true;
-          this.data = data.video;
+          this.data = data;
           if(this.options.onDataok){
              this.options.onDataok(this.data);
           }
@@ -60,31 +72,7 @@ var videoPlayer = {
        }
        
     },
-    getData:function(){
-        var _url = "http://m.yxgapp.com/d/mooc/GetVideo.json",
-            _self = this;
-        var _params = {
-            videoId:this.videoId,
-            token:this.userInfo.token,
-            username:this.userInfo.username
-        };
-        _self.requestTime++;
-        $.ajax({
-            url:_url,
-            data:_params,
-            dataType:"json",
-            success:function(data){
-               _self.initData(data);
-            },
-            error:function(){
-              if(_self.requestTime < 3){
-                 setTimeout(function(){
-                    _self.getData();
-                 },2000);
-              }
-            }
-       });
-    },
+
     initPlayer:function(){
         this.poster = document.createElement("img");
         this.poster.src = this.data.coverUrl;

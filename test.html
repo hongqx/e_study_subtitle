@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
+    <meta charset="UTF-8">
+    <title>译学馆在线翻译test</title>
+    <link rel="shortcut icon" href="http://gcdp.oss-cn-qingdao.aliyuncs.com/201604/29/1461918506617_4526.ico" type="image/x-icon" />
+    <link rel="bookmark" href="http://gcdp.oss-cn-qingdao.aliyuncs.com/201604/29/1461918506617_4526.ico" type="image/x-icon" />
+    <!-- <link rel="stylesheet" type="text/css" href="http://m.yxgapp.com/d/mooc/webClient/css/yxgstyle.min.css" /> -->
+    <link rel="stylesheet" type="text/css" href="http://0.0.0.0:3001/css/style.css" />
+    <link rel="stylesheet" type="text/css" href="http://0.0.0.0:3001/css/jquery.mCustomScrollbar.css" />
+</head>
+
+<body>
+    <header>
+        <nav class="header-content clearfix">
+            <div class="logo gather"></div>
+            <div class="user fr">
+                <img class="portrait" id="js_userpic" src="http://gcdp.oss-cn-qingdao.aliyuncs.com/201604/29/1461931294806_5431.png" />
+                <span class="user-name" id="js_nickname">用户头像</span>
+            </div>
+        </nav>
+    </header>
+    <section class="trans-main clearfix" id="js_content">
+        <div class="trans-left fl">
+            <div class="video-wrap" id="video_container">
+                <video></video>
+                <div class="video-trigger">
+                    <button class="play-btn gather"></button>
+                    <div class="loading"></div>
+                </div>
+                <div class="video-mask"></div>
+            </div>
+            <div class="module">
+                <div class="m-title">视频信息</div>
+                <div class="m-content" id="J_courseDetail">
+                    <div id="js_coursetitle"></div>
+                    <h3 class="part" id="js_videotitle"></h3>
+                    <div class="video-data">
+                        <div class="progress clearfix">
+                            <div class="gather circle fl"></div>
+                            <div class="data fl" id="js_totaltime">0</div>
+                        </div>
+                        <div class="sentence" style="display:none;">
+                            <div class="gather circle fl"></div>
+                            <div class="data fl" id="js_total">0句</div>
+                        </div>
+                        <div class="times">
+                            <div class="gather circle fl"></div>
+                            <div class="data fl" id="js_joinCount">0次</div>
+                        </div>
+                    </div>
+                    <div class="video-source" id="js_courseinfo">
+                        <div class="unit">
+                        </div>
+                        <div class="teacher">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <dl class="module instruction">
+                <dt>流程说明</dt>
+                <dd>1.声波图及上方的时间轴可以左右拖动</dd>
+                <dd>2.双击声波线上空白区域添加一个市场1s的轴</dd>
+                <dd>3.单击声波线上已经完成的时间轴，该轴变为编辑模式，此时拖动交表或者轴的边线可以调整轴时长</dd>
+                <dd>4.拖动蓝色区域可调整当前屏声波图的位置</dd>
+                <dd>5.整体调整时间轴请使用App操作</dd>
+                <dd>6.完成任务请至app提交</dd>
+            </dl>
+            <dl class="module instruction">
+                <dt>快捷键</dt>
+                <dd>键盘[ ctrl+a ]: 添加一个新轴</dd>
+                <dd>键盘[ ctrl+r ]: 播放当前时间轴内的视频</dd>
+                <dd>键盘[ ctrl+d ]: 删除当前时间轴</dd>
+            </dl>
+        </div>
+        <div class="trans-right fl">
+           <div id="peaks-container">
+               
+           </div>
+           <div class="tranlist">
+               <ul class="list" style="top: 0px; left: 0px;">
+                   <li data-pindex="29" data-index="29">
+                     <div class="trans-en">
+                        <div class="sign clearfix">
+                           <div class="gather circle fl"></div>
+                           <span class="dur-time fl">01:32</span>
+                        </div>
+                        <div data-index="29" data-pindex="29" class="en-txt">
+                         I had not been prepared for how dark
+                        </div>
+                        <textarea class="en-area" data-index="29" data-pindex="29"></textarea>
+                      </div>
+                      <div class="trans-ch">
+                         <div class="sign clearfix">
+                            <div class="gather circle fl"></div>
+                            </div>
+                            <textarea data-index="29" data-pindex="29" class="ch-area">我从来没有试想过</textarea>
+                      </div>
+                     </li>
+               </ul>
+               
+           </div>
+        </div>
+    </section>
+    <footer>
+        <div class="copyright">译学馆 2016 Copyright, All rights reserved. </div>
+    </footer>
+    <div class="layer-shade" id="js_mask" style="display:none;"></div>
+    <div class="layui-layer" style="display:none;" id="js_note" type="dialog" times="9" showtime="0" contype="string">
+        <div class="layui-layer-title" style="cursor: move;" move="ok">提示</div>
+        <div class="layui-layer-content">数据加载中，请稍后...</div>
+        <div class="layui-layer-btn" style="display:none;">
+            <a class="layui-layer-btn0" target="_self">前往扫码</a>
+        </div>
+    </div>
+    <div class="layui-layer" id="js_note1" style="display: none;" type="dialog" times="9" showtime="0" contype="string">
+        <div class="layui-layer-title" style="cursor: move;" move="ok">注意</div>
+        <div class="layui-layer-content">数据加载中，请稍后...</div>
+        <div class="layui-layer-btn">
+            <a class="layui-layer-btn0" target="_self">继续访问</a>
+        </div>
+    </div>
+   <!--  <script type="text/javascript" src="http://0.0.0.0:3001/data/ad512d90-8a31-4df4-872b-876a378824bd.js"></script> -->
+    <script type="text/javascript" src="http://m.yxgapp.com/d/threeParty/jquery1_11_3.min.js"></script>
+    <script type="text/javascript" src="http://m.yxgapp.com/d/threeParty/jquery.mCustomScrollbar.concat.min.js"></script>
+    <script type="text/javascript" src="http://0.0.0.0:3001/js/localstorage.js"></script>
+    <script type="text/javascript" src="http://0.0.0.0:3001/js/videoPlayer.js"></script>
+    <script type="text/javascript" src="http://0.0.0.0:3001/js/videoInfo.js"></script>
+    <!--
+    <script type="text/javascript" src="http://0.0.0.0:3001/threeParty/peaks.js"></script>
+    <script type="text/javascript" src="http://0.0.0.0:3001/js/localstorage.js"></script>
+    <script type="text/javascript" src="http://0.0.0.0:3001/js/videoPlayer.js"></script>
+    <script type="text/javascript" src="http://0.0.0.0:3001/js/appinit.js"></script> -->
+</body>
+
+</html>
