@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
+    <meta charset="UTF-8">
+    <title>扫描二维码登陆</title>
+    <!-- <link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon"/>
+    <link rel="bookmark" href="images/favicon.ico" type="image/x-icon"/> -->
+    <link rel="stylesheet" type="text/css" href="http://0.0.0.0:3001/css/style.css" />
+    <script type="text/javascript">
+         var identifier = "";//由后台生成该标识符
+    </script>
+</head>
+<body>
+<header>
+	<div class="header-content">
+		<div class="logo gather"></div>
+	</div>	
+</header>
+<div class="main">
+	<p>请用译学馆app扫描此二维码，进入web翻译页面</p>
+	<div class="codeWrap">
+		<img class="code" src="http://0.0.0.0:3001/code/images/code.png"/>
+	</div>
+	<p>二维码有效期为5分钟，超时请刷新页面</p>
+</div>
+</body>
+</html>
+<script type="text/javascript" src="http://0.0.0.0:3001/code/js/jquery.min.js"></script>
+<script type="text/javascript">
+	(function(){
+		    var data = {
+		    	result:true,
+		    	data:{
+			    	userId : "15210582639",
+				    token : "69f93c2beeeac5d06b03b78220f61e351461579187758",
+				    courseId : 989,
+			        videoId : "08f3b2a3-f3d3-4624-8dc8-2b15d02826e0",
+			        nickname:"hqx",
+			        avatarUrl:'http://gcdp.oss-cn-qingdao.aliyuncs.com/201604/22/1461322820043_759.jpg'
+
+		        }
+		    }
+		    /*处理cookie的存储*/
+		    var Cookie = {
+		         set : function(key,value,expires){
+		            var expStr ="";
+		           if(expires){
+		               var time = new Date().getTime();
+		               time += expires;
+		               expStr = ";expires="+new Date(time).toGMTString();
+		            }
+		            document.cookie = key + "=" + value + expStr;
+		        },
+		        get : function(key){
+		            if(document.cookie.length > 0){
+		                var _cstart = document.cookie.indexOf(key+"=");
+		                if(_cstart > -1){
+		                    _cstart = _cstart + key.length + 1;
+		                    var _cend = document.cookie.indexOf(";",_cstart);
+		                    if(_cend === -1){
+		                        _cend = document.cookie.length;
+		                    }
+		                    return  unescape(document.cookie.substring(_cstart,_cend));
+		                }
+		            }
+		            return "";
+		        }
+		    };
+		    /*处理登陆的验证*/
+		    var LogIn = {
+		    	init : function(){
+		            this.getLogIn();
+		    	},
+		    	getLogIn : function(){
+		            var _self = this;
+			    	/*$.ajax({
+			    		url:"http://m.yxgapp.com/d/mooc/GetLoginInfo.json",
+			    		data:{
+			    			  identifier:""
+			    			},
+			    		type:"GET",
+			    		dataType:"json",
+			    		success:function(data){
+		                    if(!data.result){
+		                        _self.getLogIn();
+		                    }else{
+		                    	_self.setCookie(data.data);
+		                    	_self.toTranslate();
+		                    }
+			    		},
+			    		complate:function(){
+		                   console.log("complete");
+			    		},
+			    		error:function(){
+	                       _self.getLogIn();
+			    		}
+			    	});*/
+                    setTimeout(function(){
+                        _self.setCookie(data.data);
+		                _self.toTranslate();
+                    },1000);
+			    },
+			    setCookie:function(data){
+			    	 var _duration =  parseInt(data.duration) * 1000;
+			    	 //var date = new Date().getTime()+_duration;
+		             Cookie.set("userId" , data.userId , _duration);
+		             Cookie.set("token" , data.token , _duration);
+		             Cookie.set("courseId",data.courseId);
+		             Cookie.set("videoId",data.videoId);
+		             Cookie.set("avatarUrl",data.avatarUrl);
+		             Cookie.set("nickname",data.nickname);
+			    },
+			    toTranslate : function(){
+			    	var _arr =  location.href.split("/");
+			    	_arr[_arr.length - 1] = "translate.html";
+			    	location.href = _arr.join("/");//上线之后 该处改为上线之后
+			    }
+		    };
+		    
+            window.onload =  function(){
+                LogIn.init();
+            }
+ 	})(jQuery);
+</script>
+</script>
