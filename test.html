@@ -10,6 +10,9 @@
     <!-- <link rel="stylesheet" type="text/css" href="http://m.yxgapp.com/d/mooc/webClient/css/yxgstyle.min.css" /> -->
     <link rel="stylesheet" type="text/css" href="http://0.0.0.0:3001/css/style.css" />
     <link rel="stylesheet" type="text/css" href="http://0.0.0.0:3001/css/jquery.mCustomScrollbar.css" />
+    <style type="text/css">
+       
+    </style>
 </head>
 
 <body>
@@ -76,28 +79,65 @@
             </dl>
         </div>
         <div class="trans-right fl">
-           <div id="peaks-container">
-               
+           <div class="right-top" id="peaks-container">  
            </div>
            <div class="tranlist">
-               <ul class="list" style="top: 0px; left: 0px;">
+               <ul class="sublist">
                    <li data-pindex="29" data-index="29">
-                     <div class="trans-en">
-                        <div class="sign clearfix">
-                           <div class="gather circle fl"></div>
-                           <span class="dur-time fl">01:32</span>
-                        </div>
-                        <div data-index="29" data-pindex="29" class="en-txt">
-                         I had not been prepared for how dark
-                        </div>
-                        <textarea class="en-area" data-index="29" data-pindex="29"></textarea>
-                      </div>
-                      <div class="trans-ch">
-                         <div class="sign clearfix">
-                            <div class="gather circle fl"></div>
+                      <div class="subtitle">
+                            <div class="subspan">
+                                <span class="start-time">00:10</span>
                             </div>
-                            <textarea data-index="29" data-pindex="29" class="ch-area">我从来没有试想过</textarea>
+                            <div class="sub-content">
+                                <div class="txt">Hi everyone, I'm Amy.</div>
+                                <textarea name="" id="" cols="30" rows="10">Hi everyone, I'm Amy.</textarea>
+                            </div>
+                             <div class="subspan">
+                                <span>3WPS</span>
+                                <span>6.Seconds</span>
+                                <span>30word</span>
+                                <span class="delete-icon">——</span>
+                            </div>
+                           
                       </div>
+                      <div class="buttomline"></div>
+                     </li>
+                     <li class="active" data-pindex="29" data-index="29">
+                      <div class="subtitle">
+                             <div class="subspan">
+                                <span class="start-time">00:10</span>
+                            </div>
+                            <div class="sub-content">
+                                 <div class="txt">Koreanclass101.com Hanna Hanna Hangul</div>
+                                 <textarea name="" id="" cols="30" rows="10">Koreanclass101.com Hanna Hanna Hangul</textarea>
+                            </div>
+                            <div class="subspan">
+                                <span>3WPS</span>
+                                <span>6.Seconds</span>
+                                <span>30word</span>
+                                <span class="delete-icon">——</span>
+                            </div>
+                      </div>
+                      <div class="buttomline"></div>
+                     </li>
+                     <li data-pindex="29" data-index="29">
+                      <div class="subtitle">
+                             <div class="subspan">
+                                <span class="start-time">00:10</span>
+                            </div>
+                            <div class="sub-content">
+                                <div class="txt">and welcome to Hanna Hanna Hangul on Koreanclass101.com</div>
+                                <textarea name="" id="" cols="30" rows="10"></textarea>
+                            </div>
+                            <div class="subspan">
+                                <span class="red-span">7.3WPS</span>
+                                <span>6.Seconds</span>
+                                <span>30word</span>
+                                <span class="delete-icon">——</span>
+                            </div>
+                           
+                      </div>
+                      <div class="buttomline"></div>
                      </li>
                </ul>
                
@@ -122,12 +162,46 @@
             <a class="layui-layer-btn0" target="_self">继续访问</a>
         </div>
     </div>
+    <script type="text/javascript" src=""></script>
+     <script src="http://0.0.0.0:3001/threeParty/require.js"></script>
+      <script>
+        requirejs.config({
+          paths: {
+            peaks: 'http://0.0.0.0:3001/threeParty/peaks.min',
+            $ : "http://m.yxgapp.com/d/threeParty/jquery1_11_3.min",
+            mCustomScrollbar : "http://m.yxgapp.com/d/threeParty/jquery.mCustomScrollbar.concat.min",
+            localstorage:"http://0.0.0.0:3001/js/localstorage",
+            videoPlayer:"http://0.0.0.0:3001/js/videoPlayer",
+            videoInfo:"http://0.0.0.0:3001/js/videoInfo"
+          }
+        });
+        require(['$',"videoPlayer","localstorage","videoInfo"], function($,player,localstorage,videoInfo){
+            initVideoInfo();
+        });
+
+        require(['peaks'], function(Peaks){
+          var options = {
+            container: document.getElementById('peaks-container'),
+            mediaElement: document.querySelector('video'),
+            dataUri: {
+              arraybuffer: 'http://m.yxgapp.com/wave_map_file/ad512d90-8a31-4df4-872b-876a378824bd.dat',
+              json: 'http://m.yxgapp.com/wave_map_file/ad512d90-8a31-4df4-872b-876a378824bd.json'
+
+
+            },
+            keyboard: false,
+            height: 150
+          };
+
+          var peaksInstance = Peaks.init(options);
+        });
+    </script>
    <!--  <script type="text/javascript" src="http://0.0.0.0:3001/data/ad512d90-8a31-4df4-872b-876a378824bd.js"></script> -->
-    <script type="text/javascript" src="http://m.yxgapp.com/d/threeParty/jquery1_11_3.min.js"></script>
+   <!--  <script type="text/javascript" src="http://m.yxgapp.com/d/threeParty/jquery1_11_3.min.js"></script>
     <script type="text/javascript" src="http://m.yxgapp.com/d/threeParty/jquery.mCustomScrollbar.concat.min.js"></script>
     <script type="text/javascript" src="http://0.0.0.0:3001/js/localstorage.js"></script>
     <script type="text/javascript" src="http://0.0.0.0:3001/js/videoPlayer.js"></script>
-    <script type="text/javascript" src="http://0.0.0.0:3001/js/videoInfo.js"></script>
+    <script type="text/javascript" src="http://0.0.0.0:3001/js/videoInfo.js"></script> -->
     <!--
     <script type="text/javascript" src="http://0.0.0.0:3001/threeParty/peaks.js"></script>
     <script type="text/javascript" src="http://0.0.0.0:3001/js/localstorage.js"></script>

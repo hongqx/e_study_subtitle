@@ -212,13 +212,16 @@ Course.prototype = {
         }
     }
 
-}
+};
 
-var _userInfo = userInfo();
-var options = {
-	courseId : _userInfo.courseId,
-	videoId : _userInfo.videoId,
-	token : _userInfo.token,
-	username : _userInfo.username
+function initVideoInfo(){
+  var _userInfo = userInfo();
+  var options = {
+    courseId : _userInfo.courseId,
+    videoId : _userInfo.videoId,
+    token : _userInfo.token,
+    username : _userInfo.username
+  }
+  var _course = Course.init(options);
+  return _course;
 }
-var _course = Course.init(options);

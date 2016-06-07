@@ -741,3 +741,134 @@ footer .copyright{
 ::-webkit-scrollbar-thumb:window-inactive {
     background: rgba(255,0,0,0.4); 
 }
+
+/********************时间轴制作页面css add by hongqx******************/
+.right-top{
+   height: 300px;
+}
+.sublist li {
+    /*padding: 10px 20px 10px 10px;*/
+    position: relative;
+    background: #ededed;
+    height: 150px;
+    overflow: hidden;
+    /*border-bottom: 1px solid #666;*/
+    display: flex;
+    flex-flow: row;
+}
+.sublist li:link,.sublist li:visited{
+   background: #ededed;
+}
+
+.sublist li.active .start-time{
+    color : #ff1440;
+}
+
+.sublist li:hover{
+    background: #fff;
+} 
+.sublist li:hover .txt{
+    border:1px dashed #666;
+    cursor:pointer;
+}  
+.sublist li:active{
+    background: #ededed;
+}
+
+.sublist li.active {
+    background: #fff;
+}
+.sublist .subtitle{
+    margin: 10px 10px 10px 10px;
+    -webkit-flex: 1;
+    -moz-flex: 1;
+    flex: 1;
+    border: 1px solid #c3c3c3;
+    border-radius: 3px;
+    padding: 0 10px;
+}
+
+.sublist .buttomline {
+    height: 1px;
+    position: absolute;
+    bottom: 0;
+    left: 10px;
+    right: 10px;
+    background: #c3c3c3;
+
+}
+.subtitle .subspan{
+    position: relative;
+    padding: 3px 0;
+}
+.subspan span{
+    color: #adadad;
+    line-height: 14px;
+    font-size: 12px;
+    position: relative;
+    top: 2px;
+    margin-right:10px;
+}
+
+.wps-span, .seconds-span, .word-span{
+    /*margin-right:10px;*/
+}
+.subspan .red-span{
+    color : #ff1440;
+}
+
+.subspan .delete-icon{
+   position: absolute;
+   right: 0;
+   height: 14px;
+   width: 14px;
+   border:1px solid #c3c3c3;
+   overflow:hidden;
+   border-radius:50%;
+   padding-left:1px;
+   margin-right:0;
+   font-size: 13px;
+   display: none;
+}
+
+.sublist li.active .delete-icon{
+    display: block;
+}
+
+.sublist li:hover .delete-icon{
+    display: block;
+}
+
+.sublist .subtitle .sub-content{
+    /*display: table*/;
+    display: block;
+    width:100%;
+}
+.subtitle .sub-content .txt , .subtitle .sub-content textarea{
+    overflow-x: hidden;
+    overflow-y: auto;
+    word-wrap: break-word;
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    height: 80px;
+    padding: 3px 10px 3px 10px;
+    color: #666;
+    line-height: 18px;
+    font-size: 14px;
+    font-family: proxima-nova,'Helvetica Neue',Helvetica,Arial,sans-serif;
+    white-space:normal;
+   /* display: table-cell;
+    vertical-align: middle;*/
+}
+
+.sublist .subtitle textarea{
+    display:none;
+}
+
+.sublist li.active textarea{
+    display: block;
+}
+.sublist li.active .txt{
+    display: none;
+}

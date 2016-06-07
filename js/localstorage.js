@@ -51,6 +51,7 @@ var LocalStorage = {
 
 var Cookie = {
      set : function(key,value,expires){
+        this.remove(key);
         var expStr ="";
        if(expires){
            var time = new Date().getTime();
@@ -60,6 +61,7 @@ var Cookie = {
         var _domain = ";domain=yxgapp.com";
         document.cookie = key + "=" + encodeURIComponent(value) + expStr+_domain;
     },
+
     get : function(key){
         if(document.cookie.length > 0){
             var _cstart = document.cookie.indexOf(key+"=");
@@ -73,5 +75,18 @@ var Cookie = {
             }
         }
         return "";
+    },
+
+    remove : function(key){
+        if(document.cookie.length > 0){
+            var _arr = document.cookie.split(";");
+            for(var i = 0 ; i < _arr.length ; i++ ){
+              var _iarr = _arr[i].split("=");
+              if(_iarr[0] === key){
+                _arr.pop(i);
+                break;
+              }
+            }
+        }
     }
 };
