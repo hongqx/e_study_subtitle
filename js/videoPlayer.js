@@ -35,6 +35,8 @@ videoPlayer.init  = function(containerId,options,data){
     instance.mask = $(instance.container).find(".video-mask")[0];
     instance.startPlay = false;
     $(instance.video).attr("preload","auto");
+    instance.startTime = 0;
+    instance.endTime = 0;
     //instance.videoId = instance.options.videoId;
         //this.data = data;
     instance.initData(data);
@@ -190,6 +192,10 @@ videoPlayer.prototype = {
     onTimeUpdate : function(){
        this.hideLoading();
        this.currentTime = this.video.currentTime;
+       if(this.endTime && this.endTime > 0 && this.currentTime >= this.endTime){
+           this.pause();
+           this.video.currentTime  = this.startTime;
+       }
        this.options.onUpdate ? this.options.onUpdate(this.video.currentTime) : "";
     },
     onError : function(){
@@ -202,12 +208,11 @@ videoPlayer.prototype = {
        this.showLoading();
     },
     play : function(){
-       $(this.poster).fadeOut("slow");
        if(!this.startPlay){
          //this.hideControl();
          if(this.startTime > 0){
            this.video.currentTime = this.startTime;
-           this.startTime = 0;
+           //this.startTime = 0;
          }
          this.video.play();
        }else{
@@ -236,5 +241,13 @@ videoPlayer.prototype = {
     //设置第一次播放的时间
     setStartTime : function(_time){
        this.startTime = _time;
+    },
+    //设置播放的时间范围
+    setPlayTime : function(_startTime,_endTime){
+         //this.video.currentTime = _startTime;
+         this.startPlay = false;
+         //$(this.video).on("canPlay")
+         this.startTime = _startTime;
+         this.endTime = _endTime;
     }
 };
