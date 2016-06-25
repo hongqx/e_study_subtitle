@@ -38,6 +38,7 @@ SubtitleAxis.init = function(options,containerId){
       videoId : "ad1773cf-da42-4b69-ab9c-66994a8db66c", //视频id
       userName : null,   //用户名
       token : null,       //登陆凭证
+      taskType : null,  //任务类型 1-听录 默认lauguange 英文 2-翻译  3-听译 默认lauguange中文
       errorCallBack : null   //登陆凭证失败或者是接口调取失败的时候的回调
     };*/
     _instance.videoId = _instance.options.videoId;
@@ -50,6 +51,13 @@ SubtitleAxis.init = function(options,containerId){
        "remainSegs" : null,
        "remainSubtitle" : null
     };*/
+    
+    //根据taskType判断基本语言类型
+    if(this.options.taskType === 1){
+       this.baseLanguage = "英文";
+    }else{
+        this.baseLanguage = "中文";
+    }
     _instance.containerId = containerId;  //容器id
     _instance.container = $(_instance.containerId);  //容器
     _instance.segs = [];   //时间轴存储
@@ -60,12 +68,23 @@ SubtitleAxis.init = function(options,containerId){
 };
 
 SubtitleAxis.prototype = {
-  
+  initData : function(){
+      var _loaclObj = LocalStorage.getItem(this.localKey);
+      if(!_loaclObj){
+        this.localObj = {
+             "segments" : segments,
+             "subtitleItems":_subtitleItems,
+             "remainSegs" : [],
+             "remainSubtitle" : []
+        };
+      }
+  },
   /**
    * 获取服务端已经合成的字幕数据
    * @return {[type]} [description]
    */
   getServerSubTitles : function(){
+      //如果检测到当前的本地存储中没有字幕时间轴信息 直接获取
       if(!LocalStorage.getItem(this.localKey) || this.staicState){
           var params = {
               videoId : this.videoId,
@@ -75,6 +94,7 @@ SubtitleAxis.prototype = {
           var _url  = this.urls.doload;
           _url = _url.replace("{@videoId}",this.videoId);
           this.getAjax(_url, {}, "downLoadSubTitlesCallBack");
+      //检测到本地有存储的字幕数据，先判断线上的字幕是否有更新
       }else{
           this.getStaticState();
       }
@@ -85,15 +105,59 @@ SubtitleAxis.prototype = {
    * @return {[type]} [description]
    */
   downLoadSubTitlesCallBack : function(data){
+      var _subtitle = null;
       if(data.result && data.subtitle){
            //this.mergeLocalItems(data.subtitle);
-           var _subtitle = data.subtitle
-      }else{
-        
+          _subtitle = data.subtitle;
       }
+      //处理规范下载的字幕数据
+      var _newSubtitle  = this.dealLoadSubTitle(_subtitle);
+      //合并本地数据
+      this.mergeLocalItems(_newSubtitle);
   },
   
-  
+  /**
+   * 重构从数据接口下载下来的字幕数据
+   * @param  {[type]} subtitle [Object]
+   * @return {[type]}          [Object]  返回处理好格式的字幕
+   */
+  dealLoadSubTitle : function(subtitle){
+      var _newSubtitle = {
+      }
+      if(!subtitle){
+         _newSubtitle.timeStamp = Math.ceil(new Date().getTime()/1000);
+         _newSubtitle.baseLanguage = this.baseLanguage;
+         _newSubtitle.subtitleItems  = [];
+      }else{
+         _newSubtitle.timeStamp = subtitle.subtitleTimestamp;
+         _newSubtitle.baseLanguage = this.baseLanguage;
+         var i = 0,
+             _len =  subtitle.subtitleItems.length;
+         for(; i < _len ;i++){
+            var _item  = subtitle.subtitleItems[i],
+                j = 0,
+                _iLen = _item.data.length;
+            var _newItem = {};
+            _newItem.startTime = _item.startTime;
+            _newItem.endTime = _item.endTime;
+            _newItem.id = _item.id;
+            _newItem.isDifficult =  3;
+            for( ; j < _iLen ; j++){
+               if(_item.data[j].language === this.baseLanguage){
+                  _newItem.content = _item.data[j].content;
+                  _newItem.explanation = _item.explanation;
+                  _newItem.language =  _item.language;
+                  _newItem.updateTime = _item.updateTime;
+                  _newItem.userName  =  _item.userName;
+                  _newItem.userNickname = _item.userNickname;
+                  _newSubtitle.subtitleItems.push(_newItem);
+                  continue;
+               }
+            }
+         }
+      }
+      return _newSubtitle;
+  },
     
   /**
    * 获取字幕静态化状态
@@ -170,22 +234,25 @@ SubtitleAxis.prototype = {
              "remainSegs" : [],
              "remainSubtitle" : []
           };
-          this.initData();
+          this.initSegments();
 
       // }else{
 
       // }
   },
-
-  initData : function(){
-     var peakURLs = {
+  
+  /**
+   * 初始化时间轴
+   * @return {[type]} [description]
+   */
+  initSegments : function(){
+      var peakURLs = {
         arraybuffer: 'http://cdn.yxgapp.com/wave_map_file/'+this.videoId+'.dat',
         json: 'http://cdn.yxgapp.com/wave_map_file/'+this.videoId+'.json'
-     };
-     /**************使用segments和peakURLs 初始化时间轴**************/
-     this.initDom();
+      };
+      /**************使用segments和peakURLs 初始化时间轴**************/
+      this.initDom();
   },
-
   /**
    * 初始化整个结构
    * @return {[type]} [description]
