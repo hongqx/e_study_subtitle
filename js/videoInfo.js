@@ -17,7 +17,8 @@ var userInfo = function(){
         username : decodeURI(Cookie.get("nickname")),
         token : Cookie.get("token"),
         videoId : Cookie.get("videoId"),
-        courseId : Cookie.get("courseId")
+        courseId : Cookie.get("courseId"),
+        language : "英文"
     };
 };
 
@@ -46,7 +47,7 @@ Course.init = function(options,data){
     _instance.getData();
     _instance.player = null;
     return _instance;
-}
+};
 
 Course.prototype = {
 
@@ -57,12 +58,12 @@ Course.prototype = {
          }
          $("#js_note .layui-layer-btn").hide();
          $("#js_note").show();
-    },
+  },
 
-    hideLoadNote : function(){
+  hideLoadNote : function(){
          $("#js_mask").hide();
          $("#js_note").hide();
-    },
+  },
 
 	showErrorNote : function(msg){
         this.hideLoadNote();
@@ -78,10 +79,10 @@ Course.prototype = {
         window.tokenError = true;
     },
 
-    getAjax : function(_url,_params,_successCallBack,_errorCallback){
-    	var _self = this;
+  getAjax : function(_url,_params,_successCallBack,_errorCallback){
+      var _self = this;
          $.ajax({
-         	url:_url,
+            url:_url,
             data:_params,
             type:"GET",
             dataType:"json",
@@ -95,17 +96,16 @@ Course.prototype = {
          });
 	},
     
-    getData : function() {
-    	var _self = this;
-    	var  _cparams =  {
-    		username : this.options.username,
-            token : this.options.token,
-            courseId : this.options.courseId,
-            command : "command_detail"
-    	}
-    	this.getAjax(this.interUrl.courseUrl , _cparams , "courseCallback");
-
-    	var _vparams = {
+  getData : function() {
+      var _self = this;
+      var  _cparams =  {
+          username : this.options.username,
+          token : this.options.token,
+          courseId : this.options.courseId,
+          command : "command_detail"
+      };
+      this.getAjax(this.interUrl.courseUrl , _cparams , "courseCallback");
+      var _vparams = {
             videoId : this.options.videoId,
             token : this.options.token,
             username : this.options.username
@@ -133,14 +133,14 @@ Course.prototype = {
 		if(!data.result.result){
            this.showErrorNote();
            //window.tokenError = true;
-        }else{
+    }else{
           this.videoData = data.video;
           this.showVideoInfo();
           this.createPLayer();
-        }
+    }
 	},
     
-    createPLayer : function(){
+  createPLayer : function(){
 		var playerOption = {
 			onStartPlay:null,
 			onEnd:function(){
@@ -215,13 +215,67 @@ Course.prototype = {
 };
 
 function initVideoInfo(){
+  var Control = {
+
+  };
   var _userInfo = userInfo();
   var options = {
     courseId : _userInfo.courseId,
     videoId : _userInfo.videoId,
     token : _userInfo.token,
     username : _userInfo.username
-  }
-  var _course = Course.init(options);
-  return _course;
+  };
+  Control.course = Course.init(options);
+  Control.userInfo = _userInfo;
+
+  var segSubtitlsoptions = {
+      videoId : 'ad512d90-8a31-4df4-872b-876a378824bd',
+      token : _userInfo.token,
+      username : _userInfo.username,
+      errorCallBack : Control.course.showErrorNote
+  };
+
+  Control.subtitleObj = SubtitleAxis.init(segSubtitlsoptions,"#subTitleDom");
+
+    /***for test **/
+    var testData = {
+       result : {
+          result:true
+       },
+       subtitle:{
+                subtitleTimestamp:1464528108,
+                baseLanguage:"英文",
+                subtitleItems: [{
+                  id: "30",
+                  startTime: 0,
+                  endTime: 2000,
+                  isDiffcult:1,
+                  data: [{
+                    id: "5",
+                    content: "Segment 11a Introduction",
+                    updateTime: 1464528108,
+                    username:18646350454,
+                    userNickname: "Meeger",
+                    language:"英文" ,
+                    explanation:"这样翻译才正确"
+                  }]
+                },{
+                  id: "20",
+                  startTime: 4000,
+                  endTime: 8000,
+                  isDiffcult:1,
+                  data: [{
+                    id: "5",
+                    content: "Segment 11a Introduction",
+                    updateTime: 1464528108,
+                    username:18646350454,
+                    userNickname: "Meeger",
+                    language:"英文" ,
+                    explanation:"这样翻译才正确"
+                  }]
+                }]
+              }
+    };
+    //Control.subtitleObj.downLoadSubTitlesCallBack(testData);
+  return Control;
 }

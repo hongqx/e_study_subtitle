@@ -8,8 +8,8 @@
     <link rel="shortcut icon" href="http://gcdp.oss-cn-qingdao.aliyuncs.com/201604/29/1461918506617_4526.ico" type="image/x-icon" />
     <link rel="bookmark" href="http://gcdp.oss-cn-qingdao.aliyuncs.com/201604/29/1461918506617_4526.ico" type="image/x-icon" />
     <!-- <link rel="stylesheet" type="text/css" href="http://m.yxgapp.com/d/mooc/webClient/css/yxgstyle.min.css" /> -->
-    <link rel="stylesheet" type="text/css" href="http://0.0.0.0:3001/css/style.css" />
-    <link rel="stylesheet" type="text/css" href="http://0.0.0.0:3001/css/jquery.mCustomScrollbar.css" />
+    <link rel="stylesheet" type="text/css" href="http://0.0.0.0:3002/css/style.css" />
+    <link rel="stylesheet" type="text/css" href="http://0.0.0.0:3002/css/jquery.mCustomScrollbar.css" />
     <style type="text/css">
        
     </style>
@@ -81,9 +81,9 @@
         <div class="trans-right fl">
            <div class="right-top" id="peaks-container">  
            </div>
-           <div class="tranlist">
-               <ul class="sublist">
-                   <li data-pindex="29" data-index="29">
+           <div class="tranlist" id="subTitleDom">
+               <ul class="sublist" >
+                  <!--  <li data-pindex="29" data-index="29">
                       <div class="subtitle">
                             <div class="subspan">
                                 <span class="start-time">00:10</span>
@@ -138,7 +138,7 @@
                            
                       </div>
                       <div class="buttomline"></div>
-                     </li>
+                     </li> -->
                </ul>
                
            </div>
@@ -163,19 +163,20 @@
         </div>
     </div>
     <script type="text/javascript" src=""></script>
-     <script src="http://0.0.0.0:3001/threeParty/require.js"></script>
+     <script src="http://0.0.0.0:3002/threeParty/require.js"></script>
       <script>
         requirejs.config({
           paths: {
-            peaks: 'http://0.0.0.0:3001/threeParty/peaks.min',
+            peaks: 'http://0.0.0.0:3002/threeParty/peaks.min',
             $ : "http://m.yxgapp.com/d/threeParty/jquery1_11_3.min",
             mCustomScrollbar : "http://m.yxgapp.com/d/threeParty/jquery.mCustomScrollbar.concat.min",
-            localstorage:"http://0.0.0.0:3001/js/localstorage",
-            videoPlayer:"http://0.0.0.0:3001/js/videoPlayer",
-            videoInfo:"http://0.0.0.0:3001/js/videoInfo"
+            localstorage:"http://0.0.0.0:3002/js/localstorage",
+            videoPlayer:"http://0.0.0.0:3002/js/videoPlayer",
+            videoInfo:"http://0.0.0.0:3002/js/videoInfo",
+            subtitleAxis:"http://0.0.0.0:3002/js/SubtitleAxis"
           }
         });
-        require(['$',"videoPlayer","localstorage","videoInfo"], function($,player,localstorage,videoInfo){
+        require(['$',"videoPlayer","localstorage","subtitleAxis","videoInfo"], function($,player,localstorage,subtitleAxis,videoInfo){
             initVideoInfo();
         });
 
@@ -196,17 +197,17 @@
           var peaksInstance = Peaks.init(options);
         });
     </script>
-   <!--  <script type="text/javascript" src="http://0.0.0.0:3001/data/ad512d90-8a31-4df4-872b-876a378824bd.js"></script> -->
+   <!--  <script type="text/javascript" src="http://0.0.0.0:3002/data/ad512d90-8a31-4df4-872b-876a378824bd.js"></script> -->
    <!--  <script type="text/javascript" src="http://m.yxgapp.com/d/threeParty/jquery1_11_3.min.js"></script>
     <script type="text/javascript" src="http://m.yxgapp.com/d/threeParty/jquery.mCustomScrollbar.concat.min.js"></script>
-    <script type="text/javascript" src="http://0.0.0.0:3001/js/localstorage.js"></script>
-    <script type="text/javascript" src="http://0.0.0.0:3001/js/videoPlayer.js"></script>
-    <script type="text/javascript" src="http://0.0.0.0:3001/js/videoInfo.js"></script> -->
+    <script type="text/javascript" src="http://0.0.0.0:3002/js/localstorage.js"></script>
+    <script type="text/javascript" src="http://0.0.0.0:3002/js/videoPlayer.js"></script>
+    <script type="text/javascript" src="http://0.0.0.0:3002/js/videoInfo.js"></script> -->
     <!--
-    <script type="text/javascript" src="http://0.0.0.0:3001/threeParty/peaks.js"></script>
-    <script type="text/javascript" src="http://0.0.0.0:3001/js/localstorage.js"></script>
-    <script type="text/javascript" src="http://0.0.0.0:3001/js/videoPlayer.js"></script>
-    <script type="text/javascript" src="http://0.0.0.0:3001/js/appinit.js"></script> -->
+    <script type="text/javascript" src="http://0.0.0.0:3002/threeParty/peaks.js"></script>
+    <script type="text/javascript" src="http://0.0.0.0:3002/js/localstorage.js"></script>
+    <script type="text/javascript" src="http://0.0.0.0:3002/js/videoPlayer.js"></script>
+    <script type="text/javascript" src="http://0.0.0.0:3002/js/appinit.js"></script> -->
 </body>
 
 </html>

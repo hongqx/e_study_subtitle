@@ -36,6 +36,7 @@ var LocalStorage = {
                 if(_key !== value){
                   this.removeItem(_key+"_subtitle");
                   this.removeItem(_key+"_remainTitles");
+                  this.removeItem(_key+"_SUBTITLEAXIS");
                 }
             }
           }
