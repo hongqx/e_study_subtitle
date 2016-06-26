@@ -1,17 +1,6 @@
-define(['jquery','peaks','utility','segmentPart'], function ($, Peaks, utility, segmentPart){
-  var subtitleAxis = {};
-  window.subtitleAxis = subtitleAxis;
-  //相关接口数据
-  subtitleAxis.urls = {
-      updateS : "​http://m.yxgapp.com/d/mooc/UpdateSubtitleAxis.json",         //时间轴上传
-      update : "​http://m.yxgapp.com/d/mooc/UpdateSubtitle.json",              //字幕上传
-      doload : "http://m.yxgapp.com/mooc/{@videoId}/DownloadSubtitle.json"  ,             //已合成的字幕下载
-      getState :"http://m.yxgapp.com/mooc/GetStaticSubtitleState.json"        //字幕静态化状态获取
-  };
 
-  /************私有方法和参数*******************/
-  //dom结构模板
-  var limodel = [
+function SubtitleAxis(){
+	this.limodel = [
             '<li class="{@class}" id="{@textId}" data-index={@data-index} data-id={@textId}>',
                   '<div class="subtitle">',
                       '<div class="subspan">',
@@ -32,100 +21,92 @@ define(['jquery','peaks','utility','segmentPart'], function ($, Peaks, utility, 
             '</li>'
     ].join('');
 
-  /**
-   * 显示提示信息
-   * @param  {[type]} msg 提示内容文本
-   * @return {[type]}     null
-   */
-  var showNote = function(msg){
-      $("#js_mask").show();
-      if(msg){
-         $("#js_note .layui-layer-content").html(msg);
-      }
-      $("#js_note .layui-layer-btn").hide();
-      $("#js_note").show();
-  };
-  
-  /**
-   * 隐藏提示信息
-   * @return {[type]} [description]
-   */
-  var hideNote = function(){
-         $("#js_mask").hide();
-         $("#js_note").hide();
-  };
+    /**
+     * 接口url
+     * @type {Object}
+     */
+    this.urls = {
+      updateS : "​http://m.yxgapp.com/d/mooc/UpdateSubtitleAxis.json",         //时间轴上传
+      update : "​http://m.yxgapp.com/d/mooc/UpdateSubtitle.json",              //字幕上传
+      doload : "http://m.yxgapp.com/mooc/{@videoId}/DownloadSubtitle.json"	,             //已合成的字幕下载
+      getState :"http://m.yxgapp.com/mooc/GetStaticSubtitleState.json"        //字幕静态化状态获取
+    };
+}
 
-  /**
-   * 房发起ajax请求
-   * @param  {[type]} _url           接口链接
-   * @param  {[type]} _params        参数
-   * @param  {[type]} _successback   成功回调
-   * @param  {[type]} _errorcallback 错误回调
-   * @param  {[type]} _getType       请求类型 POST/GET
-   * @return {[type]}                null
-   */
-  var getAjax = function(_url, _params ,_successback , _errorcallback,_getType){
-      var _type = _getType==1 ? "POST" : "GET";
-      var _self = subtitleAxis;
-      $.ajax({
-        url : _url,
-        data: _params,
-        type:_type,
-        dataType:"json",
-        success : function(data){
-            console.log("getData success | "+_url+" | "+_params);
-            _successback ? _self[_successback](data) : console.log(data);
-        },
-        error : function(data){
-           console.error("getData error | "+_url+" | "+_params);
-           _errorcallback ? _self[_errorcallback](data) : console.log(data);
-        }
-      });
-  };
-  //
-  subtitleAxis.init = function(options,containerId){
-    this.options = options;
-    this.containerId = containerId;
-    this.container = $(containerId);
+SubtitleAxis.init = function(options,containerId){
+    var _instance = new SubtitleAxis();
+    _instance.options = options; /*{
+      videoId : "ad1773cf-da42-4b69-ab9c-66994a8db66c", //视频id
+      userName : null,   //用户名
+      token : null,       //登陆凭证
+      taskType : null,  //任务类型 1-听录 默认lauguange 英文 2-翻译  3-听译 默认lauguange中文
+      errorCallBack : null   //登陆凭证失败或者是接口调取失败的时候的回调
+    };*/
+    _instance.videoId = _instance.options.videoId;
     //本地存储key
-    this.localKey = this.options.videoId + "_SUBTITLEAXIS";
-
+    _instance.localKey = _instance.videoId + "_SUBTITLEAXIS";
+    //本地存储结构
+    _instance.localObj = null;/*{
+       "segments" : null,
+       "subtitleItems":null,
+       "remainSegs" : null,
+       "remainSubtitle" : null
+    };*/
+    
     //根据taskType判断基本语言类型
-    if(this.options.taskType === 1){
-        this.baseLanguage = "英文";
+    if(_instance.options.taskType === 1){
+        _instance.baseLanguage = "英文";
     }else{
-        this.baseLanguage = "中文";
+        _instance.baseLanguage = "中文";
     }
+    _instance.containerId = containerId;  //容器id
+    _instance.container = $(_instance.containerId);  //容器
+    _instance.segs = [];   //时间轴存储
+    _instance.subtitleItems = [];        //字幕存储
+    _instance.staicState = true;        //字幕静态化状态 初始 需要获取数据
+    _instance.getServerSubTitles();
+    return _instance;
+};
 
-    this.staicState = true; //字幕静态化状态 初始 需要获取数据
-    this.getServerSubTitles();
-  };
-  
+SubtitleAxis.prototype = {
+  initData : function(){
+      var _loaclObj = LocalStorage.getItem(this.localKey);
+      if(!_loaclObj){
+        this.localObj = {
+             "segments" : segments,
+             "subtitleItems":_subtitleItems,
+             "remainSegs" : [],
+             "remainSubtitle" : []
+        };
+      }
+  },
+
   /**
    * 获取服务端已经合成的字幕数据
    * @return {[type]} [description]
    */
-  subtitleAxis.getServerSubTitles =  function(){
+  getServerSubTitles : function(){
       //如果检测到当前的本地存储中没有字幕时间轴信息 直接获取
       if(!LocalStorage.getItem(this.localKey) || this.staicState){
           var params = {
-              videoId : this.options.videoId,
+              videoId : this.videoId,
               userName : this.options.userName,
               token : this.options
           };
           var _url  = this.urls.doload;
-          _url = _url.replace("{@videoId}",this.options.videoId);
-          getAjax(_url, {}, "downLoadSubTitlesCallBack");
+          _url = _url.replace("{@videoId}",this.videoId);
+          this.getAjax(_url, {}, "downLoadSubTitlesCallBack");
       //检测到本地有存储的字幕数据，先判断线上的字幕是否有更新
       }else{
           this.getStaticState();
       }
-  };
+  },
+  
   /**
    * 下载视频相关的字幕数据处理回调
    * @return {[type]} [description]
    */
-  subtitleAxis.downLoadSubTitlesCallBack = function(data){
+  downLoadSubTitlesCallBack : function(data){
       var _subtitle = null;
       if(data.result && data.subtitle){
            //this.mergeLocalItems(data.subtitle);
@@ -144,14 +125,14 @@ define(['jquery','peaks','utility','segmentPart'], function ($, Peaks, utility, 
 
       //进行相关事件的绑定
       this.addEvent();
-  };
+  },
   
   /**
    * 重构从数据接口下载下来的字幕数据
    * @param  {[type]} subtitle [Object]
    * @return {[type]}          [Object]  返回处理好格式的字幕
    */
-  subtitleAxis.dealLoadSubTitle = function(subtitle){
+  dealLoadSubTitle : function(subtitle){
       var _newSubtitle = {
       };
       if(!subtitle){
@@ -197,27 +178,27 @@ define(['jquery','peaks','utility','segmentPart'], function ($, Peaks, utility, 
          }
       }
       return _newSubtitle;
-  };
+  },
     
   /**
    * 获取字幕静态化状态
    * @return {[type]} [description]
    */
-  subtitleAxis.getStaticState = function(){
+  getStaticState : function(){
     var params = {
-      videoId : this.options.videoId,
+      videoId : this.videoId,
       userName : this.options.userName,
       token : this.options
     };
-    getAjax(this.urls.getState, params, "staticStateCallBack");
-  };
+    this.getAjax(this.urls.getState, params, "staticStateCallBack");
+  },
   
   /**
    * 获取字幕静态化状态回调函数
    * @param  {[type]} type [description]
    * @return {[type]}      [description]
    */
-  subtitleAxis.staticStateCallBack = function(data,type){
+  staticStateCallBack : function(data,type){
       if(type === 'error'){
           
       }else{
@@ -228,72 +209,53 @@ define(['jquery','peaks','utility','segmentPart'], function ($, Peaks, utility, 
             this.getServerSubTitles();
          }
       }
-  };
+  },
+  
+  getAjax : function(_url, _params ,_successback , _errorcallback,_getType){
+      var _type = _getType==1 ? "POST" : "GET";
+      var _self = this;
+      $.ajax({
+        url : _url,
+        data: _params,
+        type:_type,
+        dataType:"json",
+        success : function(data){
+            console.log("getData success | "+_url+" | "+_params);
+            _successback ? _self[_successback](data) : console.log(data);
+        },
+        error : function(data){
+           console.error("getData error | "+_url+" | "+_params);
+           _errorcallback ? _self[_errorcallback](data) : console.log(data);
+        }
+      });
+  },
   
   /**
    * 合并本地存储的字幕数据   如何合并待定
    * @return {[type]} [description]
    */
-  subtitleAxis.mergeLocalItems = function(subtitle){
+  mergeLocalItems: function(subtitle){
      
-  };
+  },
   
   /**
    * 初始化时间轴
    * @return {[type]} [description]
    */
-  subtitleAxis.initSegments = function(){
-    var options = {
-      container: document.getElementById('peaks-container'),
-      mediaElement: document.querySelector('video'),
-      dataUri: {
-        arraybuffer: 'http://cdn.yxgapp.com/wave_map_file/'+this.options.videoId+'.dat',
-        json: 'http://cdn.yxgapp.com/wave_map_file/'+this.options.videoId+'.json'
-      },
-      keyboard: false,
-      height: 150,
-      // Colour for the overview waveform rectangle that shows what the zoom view shows
-      overviewHighlightRectangleColor: 'red',
-      // Colour for the zoomed in waveform
-      zoomWaveformColor: 'rgba(0, 225, 128, 1)',
-      // Colour for the overview waveform
-      overviewWaveformColor: 'rgba(0, 0, 0, 0.2)',
-      // Colour of the play head(move line)
-      playheadColor: 'rgba(0, 0, 0, 1)',
-      // Colour of the axis gridlines
-      axisGridlineColor: '#ccc',
-      // Colour of the axis labels
-      axisLabelColor: '#aaa',
-      // 覆盖在总体波形图上面的矩形宽度
-      zoomLevels: [512, 1024, 2048, 4096],
-      pointMarkerColor:     'red', //Color for the point marker
-      /**
-       * Colour for the in marker of segments
-       */
-      //inMarkerColor:         'black',
-      /**
-       * Colour for the out marker of segments
-       */
-      outMarkerColor:        'red',
-    };
-    this.peaksInstance = Peaks.init(options);
-  
-    this.peaksInstance.on('segments.dragged', function (segment) {
-      console.log(segment);
-      segmentPart.draggSegment(this.peaksInstance, segment);
-      //peaksInstance.waveform.segments.updateSegments();
-    });
-    this.peaksInstance.on('dbclickAddSegment', function () {
-       segmentPart.addSegment(this.peaksInstance);
-    });
+  initSegments : function(){
+      var peakURLs = {
+        arraybuffer: 'http://cdn.yxgapp.com/wave_map_file/'+this.videoId+'.dat',
+        json: 'http://cdn.yxgapp.com/wave_map_file/'+this.videoId+'.json'
+      };
+
       /**************使用segments和peakURLs 初始化时间轴**************/
       //初始化时间轴
-  };
+  },
   /**
    * 初始化整个结构
    * @return {[type]} [description]
    */
-  subtitleAxis.initDom = function(){
+  initDom : function(){
       this.curIndex  = -1;
       var _subtitleItems = this.subtitles.subtitleItems,
           i = 0,
@@ -308,7 +270,7 @@ define(['jquery','peaks','utility','segmentPart'], function ($, Peaks, utility, 
           var _class = i=== this.curIndex ? "active" : "";
           var _content = _segmentObj.content ? _segmentObj.content : "";
           var _wps = Math.ceil(_content.length / _duration)+"WPS";
-          var _liStr = limodel.replace('{@startTime}', this.getTimeModel(_segmentObj.startTime))
+          var _liStr = this.limodel.replace('{@startTime}', this.getTimeModel(_segmentObj.startTime))
                  .replace('{@alltime}', _duration)
                  .replace('{@textId}', _segmentObj.id)
                  .replace('{@textId}', _segmentObj.id)
@@ -323,9 +285,9 @@ define(['jquery','peaks','utility','segmentPart'], function ($, Peaks, utility, 
       }
       this.container.html(this.ulDom);
       this.lis = $(this.container).find("li");
-  };
+  },
   
-  subtitleAxis.getTimeModel = function(_time){
+  getTimeModel : function(_time){
         var _secondNum = _time;//parseInt(_time / 1000 ) ;
         var _minutes = parseInt(_secondNum / 60 );
         var _hours = parseInt(_minutes / 60 );
@@ -337,43 +299,43 @@ define(['jquery','peaks','utility','segmentPart'], function ($, Peaks, utility, 
         }else{
           return _minutes+":"+_secondStr;
         }
-  };
+  },
   
   /**
    * 更新本地存储数据
    * @return {[type]} [description]
    */
-  subtitleAxis.updateLoacal = function(){
+  updateLoacal : function(){
      
-  };
+  },
 
   /**
    * 绑定相关事件
    */
-  subtitleAxis.addEvent = function(){
+  addEvent : function(){
       var _self = this;
       this.container.on("click","li",function(){
           _self.changeCurrentIndex(this);
       });
-  };
+  },
 
   /**
    * 添加一个时间轴对象
    * @param {int} index 本次添加的时间轴插入的位置
    * @param {[type]} segs  时间轴对象
    */
-	subtitleAxis.addSubtitle = function(index,segs) {
+	addSubtitle : function(index,segs) {
 		
-	};
+	},
 
   /**
    * 移除某一条字幕
    * @param  {[type]} seg [description]
    * @return {[type]}     [description]
    */
-	subtitleAxis.removeSubtitle = function(seg){
+	removeSubtitle : function(seg){
       
-	};
+	},
 
   /**
    * 更新时间轴
@@ -381,28 +343,27 @@ define(['jquery','peaks','utility','segmentPart'], function ($, Peaks, utility, 
    * @param  {[type]} segs  [description]
    * @return {[type]}       [description]
    */
-	subtitleAxis.updateSubtitle = function(seg){
+	updateSubtitle : function(seg){
      var _li = $("#"+seg.id);//js_alltime
      _li.find(".start-time").html(this.getTimeModel(seg.startTime));
      var _duration = seg.endTime - seg.startTime;
      _li.find(".js_alltime").html(_duration+"seconds");
 
 
-	};
-
+	},
   /**
    * 滚动字幕
    * @return {[type]} [description]
    */
-	subtitleAxis.scrollTo = function(){
+	scrollTo : function(){
      
-	};
+	},
 
   /**
    * 改变当前需要编辑的字幕
    * @return {[type]} [description]
    */
-  subtitleAxis.changeCurrentIndex = function(dom,_index){
+  changeCurrentIndex : function(dom,_index){
        if(this.curIndex >= 0){
            $(this.lis[this.curIndex]).removeClass("active");
        }
@@ -414,22 +375,35 @@ define(['jquery','peaks','utility','segmentPart'], function ($, Peaks, utility, 
            this.curIndex = _index;
        }
        this.scrollTo();
-  };
+  },
 
   /**
    * 上传字幕
    * @return {[type]} [description]
    */
-	subtitleAxis.saveSubtitle = function(){
+	saveSubtitle : function(){
 
-	};
+	},
   
   /**
    * 上传时间轴数据
    * @return {[type]} [description]
    */
-  subtitleAxis.saveSegments = function(action,segs){
+  saveSegments : function(action,segs){
      
-  };
-  return subtitleAxis;
-});
+  },
+
+  showNote : function(msg){
+      $("#js_mask").show();
+      if(msg){
+         $("#js_note .layui-layer-content").html(msg);
+      }
+      $("#js_note .layui-layer-btn").hide();
+      $("#js_note").show();
+  },
+
+  hideNote : function(){
+         $("#js_mask").hide();
+         $("#js_note").hide();
+  }
+};

@@ -7,11 +7,19 @@
     <title>译学馆在线翻译test</title>
     <link rel="shortcut icon" href="http://gcdp.oss-cn-qingdao.aliyuncs.com/201604/29/1461918506617_4526.ico" type="image/x-icon" />
     <link rel="bookmark" href="http://gcdp.oss-cn-qingdao.aliyuncs.com/201604/29/1461918506617_4526.ico" type="image/x-icon" />
-    <!-- <link rel="stylesheet" type="text/css" href="http://m.yxgapp.com/d/mooc/webClient/css/yxgstyle.min.css" /> -->
-    <link rel="stylesheet" type="text/css" href="http://0.0.0.0:3002/css/style.css" />
-    <link rel="stylesheet" type="text/css" href="http://0.0.0.0:3002/css/jquery.mCustomScrollbar.css" />
+    <!-- 192.168.1.107
+192.168.1.107<link rel="stylesheet" type="text/css" href="http://m.yxgapp.com/d/mooc/webClient/css/yxgstyle.min.css" /> -->
+    <link rel="stylesheet" type="text/css" href="http://192.168.1.107:3002/css/style.css" />
+    <link rel="stylesheet" type="text/css" href="http://192.168.1.107:3002/css/jquery.mCustomScrollbar.css" />
     <style type="text/css">
-       
+       .zoom-container {
+          height: 150px;
+          background-color: black;
+       }
+       .overview-container{
+          margin-top:20px;
+          height: 30px;
+       }
     </style>
 </head>
 
@@ -78,7 +86,7 @@
                 <dd>键盘[ ctrl+d ]: 删除当前时间轴</dd>
             </dl>
         </div>
-        <div class="trans-right fl">
+        <div class="trans-right fl" style="height:767px;">
            <div class="right-top" id="peaks-container">  
            </div>
            <div class="tranlist" id="subTitleDom">
@@ -162,52 +170,53 @@
             <a class="layui-layer-btn0" target="_self">继续访问</a>
         </div>
     </div>
-    <script type="text/javascript" src=""></script>
-     <script src="http://0.0.0.0:3002/threeParty/require.js"></script>
+    <script src="http://192.168.1.107:3002/threeParty/require.js"></script>
+    <script src="http://192.168.1.107:3002/js/init.js"></script>
       <script>
-        requirejs.config({
-          paths: {
-            peaks: 'http://0.0.0.0:3002/threeParty/peaks.min',
-            $ : "http://m.yxgapp.com/d/threeParty/jquery1_11_3.min",
-            mCustomScrollbar : "http://m.yxgapp.com/d/threeParty/jquery.mCustomScrollbar.concat.min",
-            localstorage:"http://0.0.0.0:3002/js/localstorage",
-            videoPlayer:"http://0.0.0.0:3002/js/videoPlayer",
-            videoInfo:"http://0.0.0.0:3002/js/videoInfo",
-            subtitleAxis:"http://0.0.0.0:3002/js/SubtitleAxis"
-          }
-        });
-        require(['$',"videoPlayer","localstorage","subtitleAxis","videoInfo"], function($,player,localstorage,subtitleAxis,videoInfo){
-            initVideoInfo();
-        });
+        // requirejs.config({
+        //   paths: {
+        //     peaks: 'http://192.168.1.107:3002/threeParty/peaks.min',
+        //     $ : "http://m.yxgapp.com/d/threeParty/jquery1_11_3.min",
+        //     mCustomScrollbar : "http://m.yxgapp.com/d/threeParty/jquery.mCustomScrollbar.concat.min",
+        //     localstorage:"http://192.168.1.107:3002/js/localstorage",
+        //     videoPlayer:"http://192.168.1.107:3002/js/videoPlayer",
+        //     videoInfo:"http://192.168.1.107:3002/js/videoInfo",
+        //     subtitleAxis:"http://192.168.1.107:3002/js/SubtitleAxis"
+        //   }
+        // });
+        // var Control;
+        // require(['$',"videoPlayer","localstorage","subtitleAxis","videoInfo"], function($,player,localstorage,subtitleAxis,videoInfo){
+        //     Control = initVideoInfo();
+        // });
 
-        require(['peaks'], function(Peaks){
-          var options = {
-            container: document.getElementById('peaks-container'),
-            mediaElement: document.querySelector('video'),
-            dataUri: {
-              arraybuffer: 'http://m.yxgapp.com/wave_map_file/ad512d90-8a31-4df4-872b-876a378824bd.dat',
-              json: 'http://m.yxgapp.com/wave_map_file/ad512d90-8a31-4df4-872b-876a378824bd.json'
+        // require(['peaks'], function(Peaks){
+        //   var options = {
+        //     container: document.getElementById('peaks-container'),
+        //     mediaElement: document.querySelector('video'),
+        //     dataUri: {
+        //       arraybuffer: 'http://m.yxgapp.com/wave_map_file/ad512d90-8a31-4df4-872b-876a378824bd.dat',
+        //       json: 'http://m.yxgapp.com/wave_map_file/ad512d90-8a31-4df4-872b-876a378824bd.json'
 
 
-            },
-            keyboard: false,
-            height: 150
-          };
+        //     },
+        //     keyboard: false,
+        //     height: 150
+        //   };
 
-          var peaksInstance = Peaks.init(options);
-        });
+        //   var peaksInstance = Peaks.init(options);
+        //});
     </script>
-   <!--  <script type="text/javascript" src="http://0.0.0.0:3002/data/ad512d90-8a31-4df4-872b-876a378824bd.js"></script> -->
+   <!--  <script type="text/javascript" src="http://192.168.1.107:3002/data/ad512d90-8a31-4df4-872b-876a378824bd.js"></script> -->
    <!--  <script type="text/javascript" src="http://m.yxgapp.com/d/threeParty/jquery1_11_3.min.js"></script>
     <script type="text/javascript" src="http://m.yxgapp.com/d/threeParty/jquery.mCustomScrollbar.concat.min.js"></script>
-    <script type="text/javascript" src="http://0.0.0.0:3002/js/localstorage.js"></script>
-    <script type="text/javascript" src="http://0.0.0.0:3002/js/videoPlayer.js"></script>
-    <script type="text/javascript" src="http://0.0.0.0:3002/js/videoInfo.js"></script> -->
+    <script type="text/javascript" src="http://192.168.1.107:3002/js/localstorage.js"></script>
+    <script type="text/javascript" src="http://192.168.1.107:3002/js/videoPlayer.js"></script>
+    <script type="text/javascript" src="http://192.168.1.107:3002/js/videoInfo.js"></script> -->
     <!--
-    <script type="text/javascript" src="http://0.0.0.0:3002/threeParty/peaks.js"></script>
-    <script type="text/javascript" src="http://0.0.0.0:3002/js/localstorage.js"></script>
-    <script type="text/javascript" src="http://0.0.0.0:3002/js/videoPlayer.js"></script>
-    <script type="text/javascript" src="http://0.0.0.0:3002/js/appinit.js"></script> -->
+    <script type="text/javascript" src="http://192.168.1.107:3002/threeParty/peaks.js"></script>
+    <script type="text/javascript" src="http://192.168.1.107:3002/js/localstorage.js"></script>
+    <script type="text/javascript" src="http://192.168.1.107:3002/js/videoPlayer.js"></script>
+    <script type="text/javascript" src="http://192.168.1.107:3002/js/appinit.js"></script> -->
 </body>
 
 </html>
