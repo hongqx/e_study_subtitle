@@ -13,12 +13,12 @@ var userInfo = function(){
 	}
 	return {
         avatarUrl : Cookie.get("avatarUrl"),
-        nickname : Cookie.get("nickname"),
-        username : decodeURI(Cookie.get("nickname")),
+        nickname : decodeURI(Cookie.get("nickname")),
+        username : decodeURI(Cookie.get("userId")),
         token : Cookie.get("token"),
         videoId : Cookie.get("videoId"),
         courseId : Cookie.get("courseId"),
-        language : "英文"
+        taskType : Cookie.get("taskType")
     };
 };
 
@@ -210,6 +210,17 @@ Course.prototype = {
         }else{
           return _minutes+":"+_secondStr;
         }
+    },
+
+    /**
+     * 调用播放器的接口 seek到相应的时间点
+     * @return {[type]} [description]
+     */
+    changePlayerTime : function(startTime, endTime){
+      if(this.player){
+         this.player.setPlayTime(startTime,endTime);
+         this.player.play();
+      }
     }
 
 };

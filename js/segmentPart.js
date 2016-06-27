@@ -182,7 +182,7 @@ define(['jquery', 'peaks', 'utility'], function ($, peaks, utility) {
         if (this.processSegments(instance, segment)) {
             instance.segments.add([segment]);   
             // TODO调用textarea接口添加textarea
-            addTextArea(instance);
+            //addTextArea(instance);
         }
         for (var i = 0, len = allSegments.length; i < len; i++) {
             if (!allSegments[i].segmentId) {
@@ -191,6 +191,7 @@ define(['jquery', 'peaks', 'utility'], function ($, peaks, utility) {
         }
         // 添加后重新排序
         this.sortSegments(instance);
+        Control.subtitleAxis.addSubtitle();
     };
 
 
@@ -268,11 +269,12 @@ define(['jquery', 'peaks', 'utility'], function ($, peaks, utility) {
     segmentPart.draggSegment = function (instance, segment) {
         // 调整前后有重合的时间轴
         //this.ajustSegments(instance, segment);
-
+         Control.subtitleAxis.updateSubtitle(segment);
         // 如果触碰到邻居就停止
         if (this.moveSegment(instance, segment)) {
             // 更新对应textarea的字段
-            utility.updateData(segment);
+            //utility.updateData(segment);
+            Control.subtitleAxis.updateSubtitle(segment);
         }
     };
     return segmentPart;

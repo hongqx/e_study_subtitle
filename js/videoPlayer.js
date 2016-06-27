@@ -194,7 +194,8 @@ videoPlayer.prototype = {
        this.currentTime = this.video.currentTime;
        if(this.endTime && this.endTime > 0 && this.currentTime >= this.endTime){
            this.pause();
-           this.video.currentTime  = this.startTime;
+           this.endTime = -1;
+           //this.video.currentTime  = this.startTime;
        }
        this.options.onUpdate ? this.options.onUpdate(this.video.currentTime) : "";
     },

@@ -4,22 +4,39 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
     <meta charset="UTF-8">
-    <title>译学馆在线翻译test</title>
+    <title>test</title>
     <link rel="shortcut icon" href="http://gcdp.oss-cn-qingdao.aliyuncs.com/201604/29/1461918506617_4526.ico" type="image/x-icon" />
     <link rel="bookmark" href="http://gcdp.oss-cn-qingdao.aliyuncs.com/201604/29/1461918506617_4526.ico" type="image/x-icon" />
     <!-- 192.168.1.107
 192.168.1.107<link rel="stylesheet" type="text/css" href="http://m.yxgapp.com/d/mooc/webClient/css/yxgstyle.min.css" /> -->
-    <link rel="stylesheet" type="text/css" href="http://192.168.1.107:3002/css/style.css" />
-    <link rel="stylesheet" type="text/css" href="http://192.168.1.107:3002/css/jquery.mCustomScrollbar.css" />
+    <link rel="stylesheet" type="text/css" href="http://10.10.151.76:3002/css/style.css" />
+    <link rel="stylesheet" type="text/css" href="http://10.10.151.76:3002/css/jquery.mCustomScrollbar.css" />
     <style type="text/css">
-       .zoom-container {
-          height: 150px;
-          background-color: black;
-       }
-       .overview-container{
-          margin-top:20px;
-          height: 30px;
-       }
+        #titles {
+        font-family: 'Helvetica neue', Helvetica, Arial, sans-serif;
+      }
+
+      #titles, .right-top {
+        margin: 24px auto;
+        /*width: 1000px;*/
+      }
+
+      .zoom-container,.overview-container{
+        box-shadow: 3px 3px 20px #919191;
+        margin: 0 0 24px 0;
+        -moz-box-shadow: 3px 3px 20px #919191;
+        -webkit-box-shadow: 3px 3px 20px #919191;
+        line-height: 0;
+      }
+
+      .overview-container {
+        height: 85px;
+        background-color: black;
+      }
+
+      #second-waveform-visualiser-container [class*="-container"] {
+        background: #111;
+      }
     </style>
 </head>
 
@@ -170,18 +187,18 @@
             <a class="layui-layer-btn0" target="_self">继续访问</a>
         </div>
     </div>
-    <script src="http://192.168.1.107:3002/threeParty/require.js"></script>
-    <script src="http://192.168.1.107:3002/js/init.js"></script>
+    <script src="http://10.10.151.76:3002/threeParty/require.js"></script>
+    <script src="http://10.10.151.76:3002/js/init.js"></script>
       <script>
         // requirejs.config({
         //   paths: {
-        //     peaks: 'http://192.168.1.107:3002/threeParty/peaks.min',
+        //     peaks: 'http://10.10.243.76:3002/threeParty/peaks.min',
         //     $ : "http://m.yxgapp.com/d/threeParty/jquery1_11_3.min",
         //     mCustomScrollbar : "http://m.yxgapp.com/d/threeParty/jquery.mCustomScrollbar.concat.min",
-        //     localstorage:"http://192.168.1.107:3002/js/localstorage",
-        //     videoPlayer:"http://192.168.1.107:3002/js/videoPlayer",
-        //     videoInfo:"http://192.168.1.107:3002/js/videoInfo",
-        //     subtitleAxis:"http://192.168.1.107:3002/js/SubtitleAxis"
+        //     localstorage:"http://10.10.243.76:3002/js/localstorage",
+        //     videoPlayer:"http://10.10.243.76:3002/js/videoPlayer",
+        //     videoInfo:"http://10.10.243.76:3002/js/videoInfo",
+        //     subtitleAxis:"http://10.10.243.76:3002/js/SubtitleAxis"
         //   }
         // });
         // var Control;
@@ -206,17 +223,17 @@
         //   var peaksInstance = Peaks.init(options);
         //});
     </script>
-   <!--  <script type="text/javascript" src="http://192.168.1.107:3002/data/ad512d90-8a31-4df4-872b-876a378824bd.js"></script> -->
+   <!--  <script type="text/javascript" src="http://10.10.243.76:3002/data/ad512d90-8a31-4df4-872b-876a378824bd.js"></script> -->
    <!--  <script type="text/javascript" src="http://m.yxgapp.com/d/threeParty/jquery1_11_3.min.js"></script>
     <script type="text/javascript" src="http://m.yxgapp.com/d/threeParty/jquery.mCustomScrollbar.concat.min.js"></script>
-    <script type="text/javascript" src="http://192.168.1.107:3002/js/localstorage.js"></script>
-    <script type="text/javascript" src="http://192.168.1.107:3002/js/videoPlayer.js"></script>
-    <script type="text/javascript" src="http://192.168.1.107:3002/js/videoInfo.js"></script> -->
+    <script type="text/javascript" src="http://10.10.243.76:3002/js/localstorage.js"></script>
+    <script type="text/javascript" src="http://10.10.243.76:3002/js/videoPlayer.js"></script>
+    <script type="text/javascript" src="http://10.10.243.76:3002/js/videoInfo.js"></script> -->
     <!--
-    <script type="text/javascript" src="http://192.168.1.107:3002/threeParty/peaks.js"></script>
-    <script type="text/javascript" src="http://192.168.1.107:3002/js/localstorage.js"></script>
-    <script type="text/javascript" src="http://192.168.1.107:3002/js/videoPlayer.js"></script>
-    <script type="text/javascript" src="http://192.168.1.107:3002/js/appinit.js"></script> -->
+    <script type="text/javascript" src="http://10.10.243.76:3002/threeParty/peaks.js"></script>
+    <script type="text/javascript" src="http://10.10.243.76:3002/js/localstorage.js"></script>
+    <script type="text/javascript" src="http://10.10.243.76:3002/js/videoPlayer.js"></script>
+    <script type="text/javascript" src="http://10.10.243.76:3002/js/appinit.js"></script> -->
 </body>
 
 </html>

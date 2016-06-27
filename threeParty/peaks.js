@@ -17900,7 +17900,7 @@ Peaks.prototype = Object.create(ee.prototype, {
     segments: {
         get: function () {
             var self = this;
-            function addSegment(startTime, endTime, editable, color, labelText) {
+            function addSegment(startTime, endTime, editable, color, labelText, id) {
                 var segments = arguments[0];
                 if (typeof segments === 'number') {
                     segments = [{
@@ -17908,12 +17908,13 @@ Peaks.prototype = Object.create(ee.prototype, {
                             endTime: endTime,
                             editable: editable,
                             color: color,
-                            labelText: labelText
+                            labelText: labelText,
+                            id: id
                         }];
                 }
                 if (Array.isArray(segments)) {
                     segments.forEach(function (segment) {
-                        self.waveform.segments.createSegment(segment.startTime, segment.endTime, segment.editable, segment.color, segment.labelText);
+                        self.waveform.segments.createSegment(segment.startTime, segment.endTime, segment.editable, segment.color, segment.labelText, segment.id);
                     });
                     self.waveform.segments.render();
                 } else {
@@ -18356,8 +18357,9 @@ module.exports = function (peaks) {
         this.segments.forEach(updateSegmentWaveform);
         this.render();
     };
-    this.createSegment = function (startTime, endTime, editable, color, labelText) {
-        var segmentId = 'segment' + self.segments.length;
+    //添加id  add by hongqx
+    this.createSegment = function (startTime, endTime, editable, color, labelText,id) {
+        var segmentId = id ? id : 'segment' + self.segments.length;
         if (startTime >= 0 === false) {
             throw new TypeError('[waveform.segments.createSegment] startTime should be a positive value');
         }
