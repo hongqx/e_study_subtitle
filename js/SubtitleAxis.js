@@ -87,9 +87,14 @@ define(['jquery','peaks','utility','segmentPart','mCustomScrollbar'], function (
     this.options = options;
     this.containerId = containerId;
     this.container = $(containerId);
-    //本地存储key
+    //本地存储key 整体数据存储
     this.localKey = this.options.videoId + "_SUBTITLEAXIS";
 
+    //提交字幕失败的时候的数据存储key
+    this.remainKey =  "REMAIN_SUBTITL";
+
+    //提交时间轴数据失败的时候的本地存储key
+    this.remainSKey = "REMAIN_SUBTITLEAXIS";
     //根据taskType判断基本语言类型
     if(this.options.taskType === 1){
         this.baseLanguage = "英文";
@@ -125,6 +130,12 @@ define(['jquery','peaks','utility','segmentPart','mCustomScrollbar'], function (
       }else{
           this.getStaticState();
       }
+
+      //启动时间轴数据检测提交轮循
+      this.saveSubtitle();
+
+      //启动字幕更新数据检测提交轮循
+      
   };
   /**
    * 下载视频相关的字幕数据处理回调
@@ -181,29 +192,29 @@ define(['jquery','peaks','utility','segmentPart','mCustomScrollbar'], function (
                 _iLen = _item.data.length;
             var _newItem = {},
                 _newseg = {};
-            _newItem.startTime = Math.ceil(_item.startTime / 1000);
-            _newItem.endTime = Math.ceil(_item.endTime / 1000);
+            _newItem.startTime = _item.startTime ;
+            _newItem.endTime = _item.endTime ;
 
             _newseg.startTime = Math.ceil(_item.startTime / 1000);
             _newseg.endTime = Math.ceil(_item.endTime / 1000);
             _newseg.id = _item.id;
             _newseg.editable = true;
-            _newSubtitle.segments.push(_newseg);
 
-            _newItem.id = _item.id;
+            _newItem.subtitleItemId = _item.id;
             _newItem.isDifficult =  3;
             for( ; j < _iLen ; j++){
                if(_item.data[j].language === this.baseLanguage){
                   _newItem.content = _item.data[j].content;
-                  _newItem.explanation = _item.explanation;
-                  _newItem.language =  _item.language;
-                  _newItem.updateTime = _item.updateTime;
-                  _newItem.userName  =  _item.userName;
-                  _newItem.userNickname = _item.userNickname;
+                  _newItem.explanation = _item.data[j].explanation;
+                  _newItem.language =  _item.data[j].language;
+                  _newItem.updateTime = _item.data[j].updateTime;
+                  _newItem.username  =  _item.data[j].username;
+                  _newItem.userNickname = _item.data[j].userNickname;
                   continue;
                }
             }
             _newSubtitle.subtitleItems.push(_newItem);
+            _newSubtitle.segments.push(_newseg);
          }
       }
       return _newSubtitle;
@@ -305,6 +316,12 @@ define(['jquery','peaks','utility','segmentPart','mCustomScrollbar'], function (
       /**************使用segments和peakURLs 初始化时间轴**************/
       //初始化时间轴
   };
+
+
+  /**********************************************************************
+   *   DOM 操作部分
+   **********************************************************************/
+
   /**
    * 初始化整个结构
    * @return {[type]} [description]
@@ -346,6 +363,11 @@ define(['jquery','peaks','utility','segmentPart','mCustomScrollbar'], function (
       });
   };
  
+  /**
+   * 根据字幕插入索引和字幕数据，在dom中插入一条数据
+   * @param {Int} index       字幕需要插入的索引位置
+   * @param {Object} newSubtitle 要插入的新字幕数据
+   */
   subtitleAxis.addLiDom = function(index, newSubtitle){
       var _duration = (newSubtitle.endTime - newSubtitle.startTime).toFixed(1);
       var _wps = Math.ceil(newSubtitle.content.length / _duration)+"WPS";
@@ -371,11 +393,13 @@ define(['jquery','peaks','utility','segmentPart','mCustomScrollbar'], function (
           liDom.insertBefore(nextDom);
       }
       this.changeCurrentIndex(null,index);
-  },
+  };
   
   /**
-   * 删除lidom节点
-   * @return {[type]} [description]
+   * 根据id删除一条字幕dom
+   * @param  {Int} id    要删除的字幕的id
+   * @param  {Int} index 该条字幕所在的索引位置
+   * @return {[type]}       [description]
    */
   subtitleAxis.deleteLiDom = function(id,index){
       var liDom = $("#"+id);
@@ -384,29 +408,33 @@ define(['jquery','peaks','utility','segmentPart','mCustomScrollbar'], function (
       if(this.curIndex > index){
          this.curIndex--;
       }
-  },
+  };
 
-
+  /**
+   * 格式化时间  以second为单位
+   * @param  {Int} _time 时间轴
+   * @return {String}       拼接好的时间轴数据
+   */
   subtitleAxis.getTimeModel = function(_time){
-        var _secondNum = _time;//parseInt(_time / 1000 ) ;
-        var _minutes = parseInt(_secondNum / 60 );
-        var _hours = parseInt(_minutes / 60 );
+        var _secondNum = _time > 1000 ? parseInt(_time / 1000 ) : _time;
+        var _minutes = parseInt(_secondNum / 60);
+        var _hours = parseInt(_minutes / 60);
         _minutes = _minutes > 9 ? _minutes : ("0"+_minutes);
         _secondNum = _secondNum % 60;
         _secondStr = _secondNum > 9 ? _secondNum  : ("0"+_secondNum);
         if(_hours > 0){
           return  _hours+":"+_minutes+":"+_secondStr;
-        }else{
-          return _minutes+":"+_secondStr;
         }
+        return _minutes+":"+_secondStr;
   };
-  
+
+  /***************本地存储数据的操作*****************/
   /**
    * 更新本地存储数据
    * @return {[type]} [description]
    */
   subtitleAxis.updateLoacal = function(){
-     
+       LocalStorage.setItem(this.localKey, JSON.stringify(this.subtitles));
   };
 
   /**
@@ -438,12 +466,6 @@ define(['jquery','peaks','utility','segmentPart','mCustomScrollbar'], function (
         target.hide();
         var txtDom = target.siblings('.txt');
         txtDom.html(val).show();
-        //包含中文 不做更新
-        // if(/.*[\u4e00-\u9fa5]+.*$/.test(val)){
-        //    //target.val(target.siblings('.en-txt').val());
-        //    target.siblings('.en-txt').addClass("en-error");
-        //    return;
-        // }
         //target.siblings('.en-txt').removeClass("en-error");
         var _index = parseInt(target.attr("data-index"));
         var _basesubtitle = this.subtitles.subtitleItems[_index];//this.data.subtitleItems[_index].baseSubtitleItem;
@@ -457,8 +479,12 @@ define(['jquery','peaks','utility','segmentPart','mCustomScrollbar'], function (
             _basesubtitle.action = 0;
             this.newSubtitles.push(_basesubtitle);
             //this.saveSubtitle(_basesubtitle,_index);
+            this.updateLoacal();
         }
   };
+
+
+
   /**
    * 添加一个时间轴对象
    * @param {int} index 本次添加的时间轴插入的位置
@@ -467,8 +493,8 @@ define(['jquery','peaks','utility','segmentPart','mCustomScrollbar'], function (
 	subtitleAxis.addSubtitle = function() {
       var i = 0 , _len =  this.subtitles.segments.length;
       var _orderSeg = orderedSegments;
-      var lastIndex = 0, insertIndex = 0;
-		  for(; i < _len; i++){
+      var insertIndex = -1;
+      for(; i < _len; i++){
         if(this.subtitles.segments[i].startime < _orderSeg[i].startime){
             insertIndex =  i;
             break;
@@ -476,7 +502,7 @@ define(['jquery','peaks','utility','segmentPart','mCustomScrollbar'], function (
            continue;
         }
       }
-      if(insertIndex === 0){
+      if(insertIndex === -1){
            insertIndex = _orderSeg.length - 1;
       }
 
@@ -485,23 +511,26 @@ define(['jquery','peaks','utility','segmentPart','mCustomScrollbar'], function (
       _newSeg.action  = 2;
       console.log(_newSeg);
       this.subtitles.segments.splice(insertIndex, 0 ,_newSeg);
+      _newSeg.startTime = _newSeg.startTime * 1000;
+      _newseg.endTime = _newseg.endTime * 1000;
       this.newSegments.push(_newSeg);
       
       var _newSubtitle = {
                           content : "",
-                          endTime : Math.ceil(_newSeg.endTime),
-                          explanation : undefined,
-                          id : _newSeg.id,
+                          endTime : _newSeg.endTime,
+                          explanation : null,
+                         /* sub : _newSeg.id,*/
                           isDifficult : 3,
                           language : this.baseLanguage,
-                          startTime : Math.ceil(_newSeg.startTime),
+                          startTime : _newSeg.startTime ,
                           updateTime : new Date().getTime(),
                           userName : this.options.userName,
                           userNickname : this.options.userNickname
-                        }
+                        };
       this.subtitles.subtitleItems.splice(insertIndex, 0 ,_newSubtitle);
       this.newSubtitles.push(_newSubtitle);
       this.addLiDom(insertIndex,_newSubtitle);
+      this.updateLoacal();
 	};
 
   /**
@@ -521,6 +550,7 @@ define(['jquery','peaks','utility','segmentPart','mCustomScrollbar'], function (
       delSeg.action = 1;
       this.newSegments.push(delSeg);
       this.deleteLiDom(delSeg.id, index);
+      this.updateLoacal();
 	};
 
 
@@ -535,11 +565,11 @@ define(['jquery','peaks','utility','segmentPart','mCustomScrollbar'], function (
      
      var _newSubtitle = this.subtitles.subtitleItems[_index];
      var _newSeg =  this.subtitles.segments[_index];
-     _newSubtitle.startTime = seg.startTime;
-     _newSubtitle.endTime = seg.endTime;
+     _newSubtitle.startTime = seg.startTime * 1000;
+     _newSubtitle.endTime = seg.endTime * 1000;
 
-     _newSeg.startTime = seg.startTime;
-     _newSeg.endTime = seg.endTime;
+     _newSeg.startTime = seg.startTime * 1000;
+     _newSeg.endTime = seg.endTime * 1000;
      _newSeg.action = 0;
      this.newSegments.push(_newSeg);
 
@@ -549,6 +579,9 @@ define(['jquery','peaks','utility','segmentPart','mCustomScrollbar'], function (
 
      var _content = this.subtitles.subtitleItems[_index].content || "";
      var _wps = Math.ceil(_content.length / _duration)+"WPS";
+     _li.find(".js_wps").html(_wps);
+
+     this.updateLoacal();
 	};
 
   /**
@@ -588,7 +621,56 @@ define(['jquery','peaks','utility','segmentPart','mCustomScrollbar'], function (
    * @return {[type]} [description]
    */
 	subtitleAxis.saveSubtitle = function(){
+      var _self = this;
+     
+      //提交成功或者是接口调用成功的回调
+      var _successback  = function(data){
+                if(!data.result.result){
+                    console.error("提交失败");
+                }else{
+                    console.log("数据提交成功|"+data.timestamp);
+                }
+              };
+      //提交失败的回调
+      var _errorcallback = function(data){
+           console.error("接口调用失败");
+      };
 
+      //定时检测当前有更新的时间轴数组中是否有数据，有的话提交，没有的话什么都不做
+      var sendNewSubtitle =function(){
+            if(_self.newSubtitle.length > 0){
+              console.log("时间轴|||||有更新数据，提交"+_self.newSubtitle.length);
+              var _params = {
+                token : _self.options.token,
+                username : _self.options.username,
+                videoId : _self.options.videoId,
+                newSubtitle : _self.newSubtitle
+              };
+              //清空当前缓存的数据
+              _self.newSubtitle.splice(0,_self.newSubtitle.length);
+              getAjax(_self.update, _params , _successback ,_errorcallback,"POST");
+            }else{
+                console.log("时间轴|||||没有数据提交");
+            }
+
+      };
+      this.interval1 = setInterval(function(){
+             //var _self = subtitleAxis;
+            if(_self.newSubtitles.length > 0){
+              console.log("时间轴|||||有更新数据，提交"+_self.newSubtitle.length);
+              var _params = {
+                token : _self.options.token,
+                username : _self.options.username,
+                videoId : _self.options.videoId,
+                newSubtitle : _self.newSubtitles
+              };
+              //清空当前缓存的数据
+              _self.newSubtitles.splice(0,_self.newSubtitles.length);
+              getAjax(_self.update, _params , _successback ,_errorcallback,"POST");
+            }else{
+                console.log("时间轴|||||没有数据提交");
+            }
+      },3000);
 	};
   
   /**
@@ -607,6 +689,6 @@ define(['jquery','peaks','utility','segmentPart','mCustomScrollbar'], function (
    */
   subtitleAxis.changePlayerTime = function(startTime,endTime){
       Control.course.changePlayerTime(startTime, endTime);
-  }
+  };
   return subtitleAxis;
 });

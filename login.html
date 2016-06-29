@@ -9,7 +9,7 @@
     <link rel="bookmark" href="http://gcdp.oss-cn-qingdao.aliyuncs.com/201604/29/1461918506617_4526.ico" type="image/x-icon"/>
     <link rel="stylesheet" type="text/css" href="http://m.yxgapp.com/d/mooc/webClient/css/yxgstyle.min.css" />
     <script type="text/javascript">
-       var identifier = "8a25f221-5f1a-4ded-8b6b-59efaf7bd998";//由后台生成该标识符
+       var identifier = "";//由后台生成该标识符
     </script>
 </head>
 <body>
@@ -21,7 +21,7 @@
 <div class="main">
     <p>请用译学馆app扫描此二维码，进入web翻译页面</p>
     <div class="codeWrap">
-      <img class="code" src="http://m.yxgapp.com/qrcode/8a25f221-5f1a-4ded-8b6b-59efaf7bd998.png"/>
+      <img class="code" src=""/>
     </div>
     <p>二维码有效期为5分钟，超时请刷新页面</p>
 </div>
@@ -41,14 +41,32 @@
     <a class="layui-layer-btn0" target="_self">继续访问</a>
    </div>
 </div>
-</body>
-</html>
 <script type="text/javascript" src="http://m.yxgapp.com/d/threeParty/jquery1_11_3.min.js"></script>
+<script type="text/javascript">
+     var htmlobj =  $.ajax({
+              url:"http://t.yxgapp.com/index.html?_"+new Date().getTime(),
+              type:"GET",
+              dataType :"json",
+              success:function(data){
+               // console.log(data);
+                //getHtmlData(data);
+              },
+              complete : function(data){
+                   init(data);
+              }
+          });
+       function init(htmlobj){
+          identifier = htmlobj.responseText.substr(653,55).split('"')[1];
+          var imgStr = htmlobj.responseText.substr(955,94).split('src="')[1].replace('"/>','');
+          $('.code').attr("src",imgStr);
+       }
+    
+</script>
 <script type="text/javascript">
     (function(){
             var Cookie = {
                  set : function(key,value,expires){
-                    this.remove(key);
+                  this.remove(key);
                     var expStr ="";
                    if(expires){
                        var time = new Date().getTime();
@@ -114,7 +132,6 @@
                                 }
                             }else{
                                 _self.setCookie(data);
-                                _self.toTranslate();
                             }
                         },
                         error:function(){
@@ -132,6 +149,14 @@
                     _noteDom.show();
                 },
                 setCookie:function(data){
+                    if(!data.courseId || data.videoId){
+                        var _notetext = "二维码数据获取异常，请刷新兵再次扫描";
+                        var fun = function(){
+                           location.href = location.href+"?_t=" + new Date().getTime();
+                        };
+                        this.showNote(_notetext,{},fun);
+                        return ;
+                    }
                      var _duration =  parseInt(data.duration) * 1000;
                      //var date = new Date().getTime()+_duration;
                      Cookie.set("userId" , data.userId , _duration);
@@ -140,9 +165,19 @@
                      data.videoId ? Cookie.set("videoId",data.videoId) : "";
                      Cookie.set("avatarUrl",data.avatarUrl);
                      Cookie.set("nickname",data.nickname);
+                     Cookie.set("taskType",data.taskType);
+
+                      _self.toTranslate(data);
                 },
-                toTranslate : function(){
-                    location.href ='http://m.yxgapp.com/d/mooc/webClient/translate.html';
+                toTranslate : function(data){
+                    var _taskType = parseInt(data.taskType);
+                    var _url ;
+                    if(_taskType === 1 || _taskType === 3){
+                        _url = 'http://m.yxgapp.com/d/mooc/webClient/subtitle.html'
+                    }else if(taskType === 2){
+                       'http://m.yxgapp.com/d/mooc/webClient/translate.html';
+                    }
+                    location.href = _url;
                 },
                 showNote : function(msg,css,callback){
                     var dom = $("#js_note1");
@@ -201,3 +236,5 @@
             };
     })(jQuery);
 </script>
+</body>
+</html>
