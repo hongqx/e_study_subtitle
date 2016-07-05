@@ -59,8 +59,8 @@ define(['jquery','peaks','utility','segmentPart','mCustomScrollbar'], function (
    * 房发起ajax请求
    * @param  {[type]} _url           接口链接
    * @param  {[type]} _params        参数
-   * @param  {[type]} _successback   成功回调
-   * @param  {[type]} _errorcallback 错误回调
+   * @param  {[type]} _successback   成功函数的名字
+   * @param  {[type]} _errorcallback 错误回调函数的名字
    * @param  {[type]} _getType       请求类型 POST/GET
    * @return {[type]}                null
    */
@@ -87,6 +87,7 @@ define(['jquery','peaks','utility','segmentPart','mCustomScrollbar'], function (
     this.options = options;
     this.containerId = containerId;
     this.container = $(containerId);
+
     //本地存储key 整体数据存储
     this.localKey = this.options.videoId + "_SUBTITLEAXIS";
 
@@ -105,9 +106,9 @@ define(['jquery','peaks','utility','segmentPart','mCustomScrollbar'], function (
     this.staicState = true; //字幕静态化状态 初始 需要获取数据
     
     //用于存储新的时间轴
-    this.newSegments = [];
-    this.newSubtitles = [];
-    this.getServerSubTitles();
+    this.newSegments = [];  //存储未提交的时间轴信息
+    this.newSubtitles = [];   //存储未提交的字幕数据
+    this.getServerSubTitles();    //获取服务端数据
     return this;
   };
   
@@ -132,7 +133,8 @@ define(['jquery','peaks','utility','segmentPart','mCustomScrollbar'], function (
       }
 
       //启动时间轴数据检测提交轮循
-      this.saveSubtitle();
+      this.startPostInterval();
+      //this.saveSubtitle();
 
       //启动字幕更新数据检测提交轮循
       
@@ -256,7 +258,7 @@ define(['jquery','peaks','utility','segmentPart','mCustomScrollbar'], function (
    * @return {[type]} [description]
    */
   subtitleAxis.mergeLocalItems = function(subtitle){
-     
+     this.updateLoacal(1);
   };
   
   /**
@@ -337,15 +339,15 @@ define(['jquery','peaks','utility','segmentPart','mCustomScrollbar'], function (
 
       for(; i < _len ;  i++){
           var _segmentObj = _subtitleItems[i];
-          var _duration = (_segmentObj.endTime - _segmentObj.startTime).toFixed(1);
+          var _duration = ((_segmentObj.endTime - _segmentObj.startTime)/1000).toFixed(1);
           var _class = i=== this.curIndex ? "active" : "";
           var _content = _segmentObj.content ? _segmentObj.content : "";
           var _wps = Math.ceil(_content.length / _duration)+"WPS";
           var _liStr = limodel.replace('{@startTime}', this.getTimeModel(_segmentObj.startTime))
                  .replace('{@alltime}', _duration)
-                 .replace('{@textId}', _segmentObj.id)
-                 .replace('{@textId}', _segmentObj.id)
-                 .replace('{@textId}', _segmentObj.id)
+                 .replace('{@textId}', _segmentObj.subtitleItemId)
+                 .replace('{@textId}', _segmentObj.subtitleItemId)
+                 .replace('{@textId}', _segmentObj.subtitleItemId)
                  .replace('{@wps}', _wps)
                  .replace('{@class}',_class)
                  .replace('{@content}',_content)
@@ -369,7 +371,7 @@ define(['jquery','peaks','utility','segmentPart','mCustomScrollbar'], function (
    * @param {Object} newSubtitle 要插入的新字幕数据
    */
   subtitleAxis.addLiDom = function(index, newSubtitle){
-      var _duration = (newSubtitle.endTime - newSubtitle.startTime).toFixed(1);
+      var _duration = ((newSubtitle.endTime - newSubtitle.startTime)/1000).toFixed(1);
       var _wps = Math.ceil(newSubtitle.content.length / _duration)+"WPS";
       var _class = "active";
       var _liStr = limodel.replace('{@startTime}', this.getTimeModel(newSubtitle.startTime))
@@ -392,6 +394,8 @@ define(['jquery','peaks','utility','segmentPart','mCustomScrollbar'], function (
           var nextDom = $(this.lis[index]);
           liDom.insertBefore(nextDom);
       }
+      this.lis = $(this.container).find("li");
+      this.updateDomIndex();
       this.changeCurrentIndex(null,index);
   };
   
@@ -408,6 +412,8 @@ define(['jquery','peaks','utility','segmentPart','mCustomScrollbar'], function (
       if(this.curIndex > index){
          this.curIndex--;
       }
+      this.lis = $(this.container).find("li");
+      this.updateDomIndex();
   };
 
   /**
@@ -427,26 +433,56 @@ define(['jquery','peaks','utility','segmentPart','mCustomScrollbar'], function (
         }
         return _minutes+":"+_secondStr;
   };
+  
+  /**
+   * 更新dom中的data-index
+   * @type {[type]}
+   */
+  subtitleAxis.updateDomIndex = function(index){
+      var i = 0 , len = this.lis.length;
+      for( ; i < len ; i++){
+         $(this.lis[i]).attr("data-index",i);
+         $(this.lis[i]).find("textarea").attr("data-index",i);
+      }
+  }
 
   /***************本地存储数据的操作*****************/
   /**
    * 更新本地存储数据
    * @return {[type]} [description]
    */
-  subtitleAxis.updateLoacal = function(){
-       LocalStorage.setItem(this.localKey, JSON.stringify(this.subtitles));
+  subtitleAxis.updateLoacal = function(type){
+      switch(type){
+          case 1:
+            LocalStorage.setItem(this.localKey, JSON.stringify(this.subtitles));
+            break;
+          case 2:
+             LocalStorage.setItem(this.remainKey, JSON.stringify(this.newSubtitles));
+             this.newSubtitle = [];
+             break;
+          case 3:
+             LocalStorage.setItem(this.remainSKey, JSON.stringify(this.newSegments));
+             this.newSegments = [];
+             break
+      }
+     
+
   };
 
+  
+  /***************事件处理函数 绑定相关数据*****************/
   /**
    * 绑定相关事件
    */
   subtitleAxis.addEvent = function(){
       var _self = this;
+      //添加li标签的点击事件
       this.container.on("click","li",function(e){
           //_self.changeCurrentIndex(this);
           _self.liClick($(this), e);
       });
-
+      
+      //添加编辑框失去焦点事件
       this.container.delegate("textarea","blur",function(e){
           _self.enBlur($(this),e);
           return false;
@@ -458,6 +494,7 @@ define(['jquery','peaks','utility','segmentPart','mCustomScrollbar'], function (
        target.find("textarea").show();
        target.find(".txt").hide();
   };
+
   subtitleAxis.enBlur = function(target, e){
         //console.log("enBlur");
         this.edit = false;
@@ -478,12 +515,12 @@ define(['jquery','peaks','utility','segmentPart','mCustomScrollbar'], function (
             _basesubtitle.isDifficult = 3;
             _basesubtitle.action = 0;
             this.newSubtitles.push(_basesubtitle);
+            this.updateLoacal(2);
+
             //this.saveSubtitle(_basesubtitle,_index);
             this.updateLoacal();
         }
   };
-
-
 
   /**
    * 添加一个时间轴对象
@@ -494,8 +531,9 @@ define(['jquery','peaks','utility','segmentPart','mCustomScrollbar'], function (
       var i = 0 , _len =  this.subtitles.segments.length;
       var _orderSeg = orderedSegments;
       var insertIndex = -1;
-      for(; i < _len; i++){
-        if(this.subtitles.segments[i].startime < _orderSeg[i].startime){
+
+      for(; i < _len-1; i++){
+        if(this.subtitles.segments[i].entime < _orderSeg[i].startime){
             insertIndex =  i;
             break;
         }else{
@@ -505,16 +543,22 @@ define(['jquery','peaks','utility','segmentPart','mCustomScrollbar'], function (
       if(insertIndex === -1){
            insertIndex = _orderSeg.length - 1;
       }
+      
 
       var _newSeg = _orderSeg[insertIndex];
       _newSeg.id = "b_" + new Date().getTime();
       _newSeg.action  = 2;
+      _newSeg.startTime = _newSeg.startTime * 1000;
+      _newSeg.endTime = _newseg.endTime * 1000;
+
       console.log(_newSeg);
       this.subtitles.segments.splice(insertIndex, 0 ,_newSeg);
-      _newSeg.startTime = _newSeg.startTime * 1000;
-      _newseg.endTime = _newseg.endTime * 1000;
-      this.newSegments.push(_newSeg);
       
+
+      this.newSegments.push(_newSeg);
+      this.updateLoacal(3);
+      
+      //构造新增的空字幕
       var _newSubtitle = {
                           content : "",
                           endTime : _newSeg.endTime,
@@ -528,9 +572,12 @@ define(['jquery','peaks','utility','segmentPart','mCustomScrollbar'], function (
                           userNickname : this.options.userNickname
                         };
       this.subtitles.subtitleItems.splice(insertIndex, 0 ,_newSubtitle);
-      this.newSubtitles.push(_newSubtitle);
+      
+      //插入一条dom结构
       this.addLiDom(insertIndex,_newSubtitle);
-      this.updateLoacal();
+
+      //更新整日数据本地存储
+      this.updateLoacal(1);
 	};
 
   /**
@@ -541,16 +588,27 @@ define(['jquery','peaks','utility','segmentPart','mCustomScrollbar'], function (
 	subtitleAxis.removeSubtitle = function(index){
       var _startTime = this.subtitles.subtitleItems[index].startTime,
           _endTime = this.subtitles.subtitleItems[index].endTime;
-
+      
+      //调用时间轴上的接口移除数据
       this.peaksInstance.segments.removeByTime(_startTime,_endTime);
+
+      //移除字幕数据
       var subtitleItem  = this.subtitles.subtitleItems.splice(index,1);
       subtitleItem.action = 1;
       this.newSubtitles.push(subtitleItems);
+      this.updateLoacal(2);
+      
+      //移除时间轴数据
       var delSeg = this.subtitles.segments.splice(index,1);
       delSeg.action = 1;
       this.newSegments.push(delSeg);
+      this.updateLoacal(3);
+      
+      //移除dom结构
       this.deleteLiDom(delSeg.id, index);
-      this.updateLoacal();
+
+      //更新本地存储数据
+      this.updateLoacal(1);
 	};
 
 
@@ -572,9 +630,10 @@ define(['jquery','peaks','utility','segmentPart','mCustomScrollbar'], function (
      _newSeg.endTime = seg.endTime * 1000;
      _newSeg.action = 0;
      this.newSegments.push(_newSeg);
+     this.updateLoacal(3);
 
      _li.find(".start-time").html(this.getTimeModel(Math.ceil(seg.startTime)));
-     var _duration = Math.ceil(seg.endTime - seg.startTime);
+     var _duration = Math.ceil((seg.endTime - seg.startTime)/1000);
      _li.find(".js_alltime").html(_duration+"seconds");
 
      var _content = this.subtitles.subtitleItems[_index].content || "";
@@ -617,62 +676,104 @@ define(['jquery','peaks','utility','segmentPart','mCustomScrollbar'], function (
   };
 
   /**
-   * 上传字幕
+   * 启动上传数据计时器
    * @return {[type]} [description]
    */
-	subtitleAxis.saveSubtitle = function(){
+	subtitleAxis.startPostInterval = function(){
       var _self = this;
-     
-      //提交成功或者是接口调用成功的回调
-      var _successback  = function(data){
-                if(!data.result.result){
-                    console.error("提交失败");
-                }else{
-                    console.log("数据提交成功|"+data.timestamp);
-                }
-              };
-      //提交失败的回调
-      var _errorcallback = function(data){
-           console.error("接口调用失败");
-      };
-
-      //定时检测当前有更新的时间轴数组中是否有数据，有的话提交，没有的话什么都不做
-      var sendNewSubtitle =function(){
-            if(_self.newSubtitle.length > 0){
-              console.log("时间轴|||||有更新数据，提交"+_self.newSubtitle.length);
-              var _params = {
+      var _newSubtitles = JSON.parse( LocalStorage.getItem( this.remainKey )) || [];
+      var _newsegs = JSON.parse( LocalStorage.getItem( this.remainSKey )) || [];
+      //提交更新的字幕数据
+      if(_newSubtitles.length > 0){
+          console.log("字幕数据有更新|||||有更新数据，提交"+_newSubtitles.length);
+          var _params = {
                 token : _self.options.token,
                 username : _self.options.username,
                 videoId : _self.options.videoId,
-                newSubtitle : _self.newSubtitle
-              };
-              //清空当前缓存的数据
-              _self.newSubtitle.splice(0,_self.newSubtitle.length);
-              getAjax(_self.update, _params , _successback ,_errorcallback,"POST");
-            }else{
-                console.log("时间轴|||||没有数据提交");
-            }
+                newSubtitle : _newSubtitles
+          };
+          getAjax(_self.update, _params ,"sendSubtitleSuccessBack","sendSubtitleErrorBack","POST");
+      }else{
+          console.log("字幕数据没有更新");
+      }
 
-      };
-      this.interval1 = setInterval(function(){
-             //var _self = subtitleAxis;
-            if(_self.newSubtitles.length > 0){
-              console.log("时间轴|||||有更新数据，提交"+_self.newSubtitle.length);
-              var _params = {
+      //提交有新增或者是更新的时间轴数据
+      if(_newsegs.length > 0){
+          console.log("时间轴数据有更新|||||有更新数据，提交"+_newsegs.length);
+          var _params = {
                 token : _self.options.token,
                 username : _self.options.username,
                 videoId : _self.options.videoId,
-                newSubtitle : _self.newSubtitles
-              };
-              //清空当前缓存的数据
-              _self.newSubtitles.splice(0,_self.newSubtitles.length);
-              getAjax(_self.update, _params , _successback ,_errorcallback,"POST");
-            }else{
-                console.log("时间轴|||||没有数据提交");
-            }
-      },3000);
+                newSubtitle : _newsegs
+          };
+          //getAjax(_self.updateS, _params ,"sendSubtitleSuccessBack","sendSubtitleErrorBack","POST");
+      }else{
+          console.log("时间轴数据没有更新");
+      }
+      
+      if( !this.interval1 ){
+          var _self = this;
+          this.interval1 = setInterval(function(){
+              _self.startPostInterval();
+          },3000);
+      }
+    
+      // this.interval1 = setInterval(function(){
+      //        //var _self = subtitleAxis;
+      //       if(_self.newSubtitles.length > 0){
+      //         console.log("时间轴|||||有更新数据，提交"+_self.newSubtitles.length);
+      //         var _params = {
+      //           token : _self.options.token,
+      //           username : _self.options.username,
+      //           videoId : _self.options.videoId,
+      //           newSubtitle : _self.newSubtitles
+      //         };
+      //         //清空当前缓存的数据
+      //         _self.newSubtitles.splice(0,_self.newSubtitles.length);
+      //         getAjax(_self.update, _params , _successback ,_errorcallback,"POST");
+      //       }else{
+      //           console.log("时间轴|||||没有数据提交");
+      //       }
+      // },3000);
 	};
   
+  /**
+   * 提交字幕数据成功之后回调函数
+   * @param  {[type]} data [description]
+   * @return {[type]}      [description]
+   */
+  subtitleAxis.sendSubtitleSuccessBack =  function(data){
+      console.log("subtitle success");
+      console.log(data);
+  };
+
+  /**
+   * 提交字幕数据失败之后回调
+   * @param  {[type]} data [description]
+   * @return {[type]}      [description]
+   */
+  subtitleAxis.sendSubtitleErrorBack = function(data){
+      console.error(data);
+  };
+
+  /**
+   * 提交时间轴数据成功之后回调
+   * @param  {[type]} data [description]
+   * @return {[type]}      [description]
+   */
+  subtitleAxis.sendAxisSuccessBack = function(data){
+    console.log("Axis-success");
+     console.log(data);
+  };
+  
+  /**
+   * 提交时间轴数据失败之后回调
+   * @param  {[type]} data [description]
+   * @return {[type]}      [description]
+   */
+  subtitleAxis.sendAxisErrorBack = function(data){
+
+  };
   /**
    * 上传时间轴数据
    * @return {[type]} [description]

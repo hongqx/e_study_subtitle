@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -41,6 +42,26 @@
    </div>
 </div>
 <script type="text/javascript" src="http://m.yxgapp.com/d/threeParty/jquery1_11_3.min.js"></script>
+<script type="text/javascript">
+     var htmlobj =  $.ajax({
+              url:"http://t.yxgapp.com/index.html?_"+new Date().getTime(),
+              type:"GET",
+              dataType :"json",
+              success:function(data){
+               // console.log(data);
+                //getHtmlData(data);
+              },
+              complete : function(data){
+                   init(data);
+              }
+          });
+       function init(htmlobj){
+          identifier = htmlobj.responseText.substr(653,55).split('"')[1];
+          var imgStr = htmlobj.responseText.substr(955,94).split('src="')[1].replace('"/>','');
+          $('.code').attr("src",imgStr);
+       }
+    
+</script>
 <script type="text/javascript">
     (function(){
             var Cookie = {
@@ -131,7 +152,7 @@
                     if(!data.courseId || data.videoId){
                         var _notetext = "二维码数据获取异常，请刷新兵再次扫描";
                         var fun = function(){
-                           location.href = location.origin+location.pathname+"?_t=" + new Date().getTime();
+                           location.href = location.href+"?_t=" + new Date().getTime();
                         };
                         this.showNote(_notetext,{},fun);
                         return ;
