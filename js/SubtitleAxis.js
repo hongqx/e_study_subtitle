@@ -133,7 +133,7 @@ define(['jquery','peaks','utility','segmentPart','mCustomScrollbar'], function (
       }
 
       //启动时间轴数据检测提交轮循
-      this.startPostInterval();
+      //this.startPostInterval();
       //this.saveSubtitle();
 
       //启动字幕更新数据检测提交轮循
@@ -153,7 +153,7 @@ define(['jquery','peaks','utility','segmentPart','mCustomScrollbar'], function (
       this.subtitles =  this.dealLoadSubTitle(_subtitle);
       //var _newSubtitle  = this.dealLoadSubTitle(_subtitle);
       //与本地存储的数据合并
-      this.mergeLocalItems(this.subtitles);
+      //this.mergeLocalItems(this.subtitles);
       //初始化时间轴
       this.initSegments();
 
@@ -199,9 +199,9 @@ define(['jquery','peaks','utility','segmentPart','mCustomScrollbar'], function (
 
             _newseg.startTime = Math.ceil(_item.startTime / 1000);
             _newseg.endTime = Math.ceil(_item.endTime / 1000);
-            _newseg.id = _item.id;
+            //_newseg.id = _item.id;
             _newseg.editable = true;
-
+            _newseg.id = _item.id;
             _newItem.subtitleItemId = _item.id;
             _newItem.isDifficult =  3;
             for( ; j < _iLen ; j++){
@@ -258,7 +258,7 @@ define(['jquery','peaks','utility','segmentPart','mCustomScrollbar'], function (
    * @return {[type]} [description]
    */
   subtitleAxis.mergeLocalItems = function(subtitle){
-     this.updateLoacal(1);
+     //this.updateLoacal(1);
   };
   
   /**
@@ -343,7 +343,7 @@ define(['jquery','peaks','utility','segmentPart','mCustomScrollbar'], function (
           var _class = i=== this.curIndex ? "active" : "";
           var _content = _segmentObj.content ? _segmentObj.content : "";
           var _wps = Math.ceil(_content.length / _duration)+"WPS";
-          var _liStr = limodel.replace('{@startTime}', this.getTimeModel(_segmentObj.startTime))
+          var _liStr = limodel.replace('{@startTime}', this.getTimeModel(Math.ceil(_segmentObj.startTime/1000)))
                  .replace('{@alltime}', _duration)
                  .replace('{@textId}', _segmentObj.subtitleItemId)
                  .replace('{@textId}', _segmentObj.subtitleItemId)
@@ -374,11 +374,11 @@ define(['jquery','peaks','utility','segmentPart','mCustomScrollbar'], function (
       var _duration = ((newSubtitle.endTime - newSubtitle.startTime)/1000).toFixed(1);
       var _wps = Math.ceil(newSubtitle.content.length / _duration)+"WPS";
       var _class = "active";
-      var _liStr = limodel.replace('{@startTime}', this.getTimeModel(newSubtitle.startTime))
+      var _liStr = limodel.replace('{@startTime}', this.getTimeModel( Math.ceil(newSubtitle.startTime/1000 )))
                  .replace('{@alltime}', _duration)
-                 .replace('{@textId}', newSubtitle.id)
-                 .replace('{@textId}', newSubtitle.id)
-                 .replace('{@textId}', newSubtitle.id)
+                 .replace('{@textId}', newSubtitle.subtitleItemId)
+                 .replace('{@textId}', newSubtitle.subtitleItemId)
+                 .replace('{@textId}', newSubtitle.subtitleItemId)
                  .replace('{@wps}', _wps)
                  .replace('{@class}',_class)
                  .replace('{@content}',newSubtitle.content)
@@ -444,7 +444,7 @@ define(['jquery','peaks','utility','segmentPart','mCustomScrollbar'], function (
          $(this.lis[i]).attr("data-index",i);
          $(this.lis[i]).find("textarea").attr("data-index",i);
       }
-  }
+  };
 
   /***************本地存储数据的操作*****************/
   /**
@@ -457,17 +457,42 @@ define(['jquery','peaks','utility','segmentPart','mCustomScrollbar'], function (
             LocalStorage.setItem(this.localKey, JSON.stringify(this.subtitles));
             break;
           case 2:
+             var _newSubtitles = LocalStorage.getItem( this.remainKey ) ? JSON.parse(LocalStorage.getItem( this.remainKey )) : [];
+             this.newSubtitles = this.newSubtitles.concat(_newSubtitles);
              LocalStorage.setItem(this.remainKey, JSON.stringify(this.newSubtitles));
-             this.newSubtitle = [];
+             this.newSubtitles = [];
              break;
           case 3:
+             var _newSegs = LocalStorage.getItem( this.remainSKey ) ? JSON.parse(LocalStorage.getItem( this.remainSKey )) : [];
+             this.newSegments = this.newSegments.concat(_newSegs);
              LocalStorage.setItem(this.remainSKey, JSON.stringify(this.newSegments));
              this.newSegments = [];
              break
+          default :
+            //....
       }
-     
-
   };
+  
+  /**
+   * 清空相关的本地缓存
+   * @param  {[type]} type [description]
+   * @return {[type]}      [description]
+   */
+  subtitleAxis.clearLocal = function(type){
+    switch(type){
+        case 1:
+            LocalStorage.setItem(this.localKey, "");
+            break;
+        case 2:
+            LocalStorage.setItem(this.remainKey, "");
+            break;
+        case 3:
+            LocalStorage.setItem(this.remainSKey,"");
+            break;
+        default :
+            //....
+    }
+  }
 
   
   /***************事件处理函数 绑定相关数据*****************/
@@ -515,7 +540,7 @@ define(['jquery','peaks','utility','segmentPart','mCustomScrollbar'], function (
             _basesubtitle.isDifficult = 3;
             _basesubtitle.action = 0;
             this.newSubtitles.push(_basesubtitle);
-            this.updateLoacal(2);
+            //this.updateLoacal(2);
 
             //this.saveSubtitle(_basesubtitle,_index);
             this.updateLoacal();
@@ -532,8 +557,8 @@ define(['jquery','peaks','utility','segmentPart','mCustomScrollbar'], function (
       var _orderSeg = orderedSegments;
       var insertIndex = -1;
 
-      for(; i < _len-1; i++){
-        if(this.subtitles.segments[i].entime < _orderSeg[i].startime){
+      for(; i < _len; i++){
+        if(this.subtitles.segments[i].id != _orderSeg[i].segmentId){
             insertIndex =  i;
             break;
         }else{
@@ -545,25 +570,25 @@ define(['jquery','peaks','utility','segmentPart','mCustomScrollbar'], function (
       }
       
 
-      var _newSeg = _orderSeg[insertIndex];
-      _newSeg.id = "b_" + new Date().getTime();
-      _newSeg.action  = 2;
-      _newSeg.startTime = _newSeg.startTime * 1000;
-      _newSeg.endTime = _newseg.endTime * 1000;
+      var _newSeg = {};
+      _newSeg.id = _orderSeg[insertIndex].segmentId;//"b_" + new Date().getTime();
+      _newSeg.action  = 1;
+      _newSeg.startTime = (_orderSeg[insertIndex].startTime * 1000).toFixed(0);
+      _newSeg.endTime = (_orderSeg[insertIndex].endTime * 1000).toFixed(0);
 
       console.log(_newSeg);
       this.subtitles.segments.splice(insertIndex, 0 ,_newSeg);
       
 
       this.newSegments.push(_newSeg);
-      this.updateLoacal(3);
+      //this.updateLoacal(3);
       
       //构造新增的空字幕
       var _newSubtitle = {
                           content : "",
                           endTime : _newSeg.endTime,
                           explanation : null,
-                         /* sub : _newSeg.id,*/
+                          subtitleItemId : _newSeg.id,
                           isDifficult : 3,
                           language : this.baseLanguage,
                           startTime : _newSeg.startTime ,
@@ -594,15 +619,15 @@ define(['jquery','peaks','utility','segmentPart','mCustomScrollbar'], function (
 
       //移除字幕数据
       var subtitleItem  = this.subtitles.subtitleItems.splice(index,1);
-      subtitleItem.action = 1;
+      subtitleItem.action = 3;
       this.newSubtitles.push(subtitleItems);
-      this.updateLoacal(2);
+      //this.updateLoacal(2);
       
       //移除时间轴数据
       var delSeg = this.subtitles.segments.splice(index,1);
-      delSeg.action = 1;
+      delSeg.action = 3;
       this.newSegments.push(delSeg);
-      this.updateLoacal(3);
+      //this.updateLoacal(3);
       
       //移除dom结构
       this.deleteLiDom(delSeg.id, index);
@@ -618,22 +643,29 @@ define(['jquery','peaks','utility','segmentPart','mCustomScrollbar'], function (
    * @return {[type]}       [description]
    */
 	subtitleAxis.updateSubtitle = function(seg){
-     var _li = $("#"+seg.id);//js_alltime
+     var _li = $("#"+seg.segmentId);//js_alltime
      var _index = parseInt(_li.attr("data-index"));
-     
-     var _newSubtitle = this.subtitles.subtitleItems[_index];
-     var _newSeg =  this.subtitles.segments[_index];
-     _newSubtitle.startTime = seg.startTime * 1000;
-     _newSubtitle.endTime = seg.endTime * 1000;
+     var _oldseg = this.subtitles.segments[_index];
+     if(Math.abs(seg.startTime * 1000 - _oldseg.startTime < 500) && Math.abs(seg.endTime * 1000 -_oldseg.endTime) < 500){
+        return;
+     }
 
-     _newSeg.startTime = seg.startTime * 1000;
-     _newSeg.endTime = seg.endTime * 1000;
-     _newSeg.action = 0;
-     this.newSegments.push(_newSeg);
-     this.updateLoacal(3);
+     var _newSeg =  this.subtitles.segments[_index],
+         _newSubtitle = this.subtitles.subtitleItems[_index];
+     _newSeg.startTime = _newSubtitle.startTime = (seg.startTime * 1000).toFixed(0);
+     _newSeg.endTime = _newSubtitle.endTime = (seg.endTime * 1000).toFixed(0);
 
-     _li.find(".start-time").html(this.getTimeModel(Math.ceil(seg.startTime)));
-     var _duration = Math.ceil((seg.endTime - seg.startTime)/1000);
+     _newSeg.id = this.subtitles.segments[_index].id;
+     //和最近的一条重复且都是action=0编辑，则舍弃上一条，以当前这条为标准
+     var _flag = this.findUpdateItem(2,_newSeg);
+     if(_flag  < 0){
+          _newSeg.action = 2;
+          this.newSegments.push(_newSeg);
+     }
+     //this.updateLoacal(3);
+
+     _li.find(".start-time").html(this.getTimeModel(Math.ceil(_newSeg.startTime / 1000)));
+     var _duration = ((_newSeg.endTime - _newSeg.startTime)/1000).toFixed(1);
      _li.find(".js_alltime").html(_duration+"seconds");
 
      var _content = this.subtitles.subtitleItems[_index].content || "";
@@ -642,6 +674,26 @@ define(['jquery','peaks','utility','segmentPart','mCustomScrollbar'], function (
 
      this.updateLoacal();
 	};
+  
+  subtitleAxis.findUpdateItem = function(type, obj){
+    var list , id, key;
+    if(type == 1){
+       list = this.newSubtitles;
+       key = "subtitleItemId"
+    }else{
+       list = this.newSegments;
+       key = "id";
+    }
+    var id = obj[key];
+    var i  = list.length - 1;
+    for(; i > -1 ; i--){
+        if(id == list[i][key]){
+           //break;
+           return i;
+        }
+    }
+    return -1;
+  };
 
   /**
    * 滚动字幕
@@ -681,42 +733,53 @@ define(['jquery','peaks','utility','segmentPart','mCustomScrollbar'], function (
    */
 	subtitleAxis.startPostInterval = function(){
       var _self = this;
-      var _newSubtitles = JSON.parse( LocalStorage.getItem( this.remainKey )) || [];
-      var _newsegs = JSON.parse( LocalStorage.getItem( this.remainSKey )) || [];
+      var _newSubtitles = LocalStorage.getItem( this.remainKey ) ? JSON.parse( LocalStorage.getItem( this.remainKey )) : [];
+      var _newsegs = LocalStorage.getItem( this.remainSKey ) ? JSON.parse( LocalStorage.getItem( this.remainSKey )) : [];
       //提交更新的字幕数据
+      _newSubtitles =  _newSubtitles.concat(this.newSubtitles);
       if(_newSubtitles.length > 0){
           console.log("字幕数据有更新|||||有更新数据，提交"+_newSubtitles.length);
           var _params = {
                 token : _self.options.token,
                 username : _self.options.username,
                 videoId : _self.options.videoId,
-                newSubtitle : _newSubtitles
+                from : 3,
+                newSubtitle : JSON.stringify(_newSubtitles)
           };
-          getAjax(_self.update, _params ,"sendSubtitleSuccessBack","sendSubtitleErrorBack","POST");
+          //LocalStorage.setItem( this.remainKey, JSON.stringify([]) );
+          //更新本地缓存，提交成功之后，清空
+          this.updateLoacal(2);
+          getAjax('http://m.yxgapp.com/d/mooc/UpdateSubtitle.json', _params ,"sendSubtitleSuccessBack","sendSubtitleErrorBack","POST");
       }else{
           console.log("字幕数据没有更新");
       }
 
       //提交有新增或者是更新的时间轴数据
+      _newsegs = _newsegs.concat(this.newSegments);
       if(_newsegs.length > 0){
           console.log("时间轴数据有更新|||||有更新数据，提交"+_newsegs.length);
           var _params = {
                 token : _self.options.token,
                 username : _self.options.username,
                 videoId : _self.options.videoId,
-                newSubtitle : _newsegs
+                from : 3,
+                subtitleAxises : JSON.stringify(this.newSegments)
           };
-          //getAjax(_self.updateS, _params ,"sendSubtitleSuccessBack","sendSubtitleErrorBack","POST");
+          //更新本地缓存 提交成功之后清空
+          this.updateLoacal(3);
+          getAjax("http://m.yxgapp.com/d/mooc/UpdateSubtitleAxis.json", _params ,"sendSubtitleSuccessBack","sendSubtitleErrorBack","POST");
+          //LocalStorage.setItem( this.remainSKey, JSON.stringify([]) );
+
       }else{
           console.log("时间轴数据没有更新");
       }
       
-      if( !this.interval1 ){
-          var _self = this;
-          this.interval1 = setInterval(function(){
-              _self.startPostInterval();
-          },3000);
-      }
+      // if( !this.interval1 ){
+      //     var _self = this;
+      //     this.interval1 = setInterval(function(){
+      //         _self.startPostInterval();
+      //     },3000);
+      // }
     
       // this.interval1 = setInterval(function(){
       //        //var _self = subtitleAxis;
@@ -744,6 +807,9 @@ define(['jquery','peaks','utility','segmentPart','mCustomScrollbar'], function (
    */
   subtitleAxis.sendSubtitleSuccessBack =  function(data){
       console.log("subtitle success");
+      if(data.result.resule){
+          this.clearLocal(2);
+      }
       console.log(data);
   };
 
@@ -763,7 +829,10 @@ define(['jquery','peaks','utility','segmentPart','mCustomScrollbar'], function (
    */
   subtitleAxis.sendAxisSuccessBack = function(data){
     console.log("Axis-success");
-     console.log(data);
+    console.log(data);
+    if(data.result.result){
+          this.clearLocal(3);
+    }
   };
   
   /**

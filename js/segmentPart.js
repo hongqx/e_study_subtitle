@@ -77,7 +77,7 @@ define(['jquery', 'peaks', 'utility'], function ($, peaks, utility) {
             return;
         }
         if (!segment.segmentId) {
-            segment.segmentId = 'b' + new Date().getTime();
+            segment.segmentId = 'b_' + new Date().getTime();
         }
         var i = 0, len = orderedSegments.length;
         while (i < len && segment.startTime > orderedSegments[i].startTime) {
@@ -186,7 +186,7 @@ define(['jquery', 'peaks', 'utility'], function ($, peaks, utility) {
         }
         for (var i = 0, len = allSegments.length; i < len; i++) {
             if (!allSegments[i].segmentId) {
-                allSegments[i].segmentId = 'b' + new Date().getTime();
+                allSegments[i].segmentId = 'b_' + new Date().getTime();
             }
         }
         // 添加后重新排序

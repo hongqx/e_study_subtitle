@@ -18232,11 +18232,12 @@ module.exports = function (peaks) {
         }
         return view;
     });
-    var createSegmentWaveform = function (segmentId, startTime, endTime, editable, color, labelText) {
+    var createSegmentWaveform = function (id, startTime, endTime, editable, color, labelText,segmentId) {
         var segment = {
-                id: segmentId,
+                id: id,
                 startTime: startTime,
                 endTime: endTime,
+                segmentId: segmentId,
                 labelText: labelText || '',
                 color: color || getSegmentColor(),
                 editable: editable
@@ -18358,8 +18359,9 @@ module.exports = function (peaks) {
         this.render();
     };
     //添加id  add by hongqx
-    this.createSegment = function (startTime, endTime, editable, color, labelText,id) {
-        var segmentId = id ? id : 'segment' + self.segments.length;
+    this.createSegment = function (startTime, endTime, editable, color, labelText,segmentId) {
+        //var segmentId = id ? id : 'segment' + self.segments.length;
+        var id = 'segment' + self.segments.length;
         if (startTime >= 0 === false) {
             throw new TypeError('[waveform.segments.createSegment] startTime should be a positive value');
         }
@@ -18369,7 +18371,7 @@ module.exports = function (peaks) {
         if (endTime > startTime === false) {
             throw new RangeError('[waveform.segments.createSegment] endTime should be higher than startTime');
         }
-        var segment = createSegmentWaveform(segmentId, startTime, endTime, editable, color, labelText);
+        var segment = createSegmentWaveform(id, startTime, endTime, editable, color, labelText,segmentId);
         updateSegmentWaveform(segment);
         self.segments.push(segment);
         return segment;
