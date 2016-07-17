@@ -246,9 +246,14 @@ videoPlayer.prototype = {
     //设置播放的时间范围
     setPlayTime : function(_startTime,_endTime){
          //this.video.currentTime = _startTime;
-         this.startPlay = false;
+         //this.startPlay = false;
          //$(this.video).on("canPlay")
-         this.startTime = _startTime;
-         this.endTime = _endTime;
+         //this.startTime = _startTime;
+         //this.endTime = _endTime;
+         this.video.currentTime = _startTime;
+         var _self = this;
+         $(this.video).on("canPlay",function(){
+              this.currentTime = _startTime;
+         });
     }
 };

@@ -1,14 +1,13 @@
 requirejs.config({
     paths: {
-      peaks: 'threeParty/peaks',
+      peaks: 'threeParty/peaks.js?' + new Date().getTime(),
       jquery: "threeParty/jquery-2.1.4.min",
       utility: 'js/utility',
-      segmentPart: 'js/segmentPart',
+      segmentPart: 'js/segmentPart.js?' + new Date().getTime(),
       mCustomScrollbar : "threeParty/jquery.mCustomScrollbar.concat.min",
       localstorage:"js/localstorage",
       videoPlayer:"js/videoPlayer",
-      videoInfo:"js/videoInfo",
-      subtitleAxis:"js/subtitleAxis"
+      videoInfo:"js/videoInfo"
     }
 });
 require(['jquery',"videoPlayer","localstorage","videoInfo"], function($,player,localstorage,videoInfo) {
@@ -20,6 +19,8 @@ require(['jquery', 'peaks', 'segmentPart', 'utility'], function ($, Peaks, segme
     window.globalSegments = {};
     // 储存根据starttime排序的片段，数值为{id: '', startime: ''}
     window.orderedSegments = [];
+    window.currentSegment = '';
+
     var options = {
       container: document.getElementById('peaks-container'),
       mediaElement: document.querySelector('video'),
@@ -54,11 +55,10 @@ require(['jquery', 'peaks', 'segmentPart', 'utility'], function ($, Peaks, segme
       outMarkerColor:        'red',
     };
     var peaksInstance = Peaks.init(options);
-  
+    peaksInstance.zoom.zoomOut();
     peaksInstance.on('segments.dragged', function (segment) {
-      console.log(segment);
       segmentPart.draggSegment(peaksInstance, segment);
-      //peaksInstance.waveform.segments.updateSegments();
+      peaksInstance.waveform.segments.updateSegments();
     })
     peaksInstance.on('dbclickAddSegment', function () {
        segmentPart.addSegment(peaksInstance);

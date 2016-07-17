@@ -3604,6 +3604,9 @@ var Konva = {};
          * @returns {Konva.Node}
          */
         setAbsolutePosition: function(pos) {
+            if (!pos) {
+              return;
+            }
             var origTrans = this._clearTransform(),
                 it;
 
@@ -11242,7 +11245,6 @@ var Konva = {};
         _drag: function(evt) {
             var dd = Konva.DD,
                 node = dd.node;
-
             if(node) {
                if(!dd.isDragging) {
                     var pos = node.getStage().getPointerPosition();
@@ -11256,7 +11258,7 @@ var Konva = {};
                     }
                 }
 
-                node._setDragPosition(evt);
+                node._setDragPosition(evt, node);
                 if(!dd.isDragging) {
                     dd.isDragging = true;
                     node.fire('dragstart', {
@@ -11345,10 +11347,11 @@ var Konva = {};
         }
     };
 
-    Konva.Node.prototype._setDragPosition = function(evt) {
+    Konva.Node.prototype._setDragPosition = function(evt, node) {
         var dd = Konva.DD,
             pos = this.getStage().getPointerPosition(),
             dbf = this.getDragBoundFunc();
+        
         if (!pos) {
             return;
         }
@@ -17900,7 +17903,8 @@ Peaks.prototype = Object.create(ee.prototype, {
     segments: {
         get: function () {
             var self = this;
-            function addSegment(startTime, endTime, editable, color, labelText, id) {
+            //change by hongqx init segment.segmentId
+            function addSegment(startTime, endTime, editable, color, labelText, segmentId) {
                 var segments = arguments[0];
                 if (typeof segments === 'number') {
                     segments = [{
@@ -17909,12 +17913,12 @@ Peaks.prototype = Object.create(ee.prototype, {
                             editable: editable,
                             color: color,
                             labelText: labelText,
-                            id: id
+                            segmentId: segmentId
                         }];
                 }
                 if (Array.isArray(segments)) {
                     segments.forEach(function (segment) {
-                        self.waveform.segments.createSegment(segment.startTime, segment.endTime, segment.editable, segment.color, segment.labelText, segment.id);
+                        self.waveform.segments.createSegment(segment.startTime, segment.endTime, segment.editable, segment.color, segment.labelText,segment.segmentId);
                     });
                     self.waveform.segments.render();
                 } else {
@@ -18055,7 +18059,40 @@ Peaks.prototype = Object.create(ee.prototype, {
                 }
             };
         }
-    }
+    },
+    overview: {
+        get: function () {
+            var self = this;
+            return {
+                zoomIn: function () {
+                    self.overview.setZoom(self.currentZoomLevel - 1);
+                },
+                zoomOut: function () {
+                    self.overview.setZoom(self.currentZoomLevel + 1);
+                },
+                setZoom: function (zoomLevelIndex) {
+                    if (zoomLevelIndex >= self.options.zoomLevels.length) {
+                        zoomLevelIndex = self.options.zoomLevels.length - 1;
+                    }
+                    if (zoomLevelIndex < 0) {
+                        zoomLevelIndex = 0;
+                    }
+                    var previousZoomLevel = self.currentZoomLevel;
+                    self.currentZoomLevel = zoomLevelIndex;
+                    self.emit('zoom.update', self.options.zoomLevels[zoomLevelIndex], self.options.zoomLevels[previousZoomLevel]);
+                },
+                getZoom: function () {
+                    return self.currentZoomLevel;
+                },
+                overview: function zoomToOverview() {
+                    self.emit('zoom.update', self.waveform.waveformOverview.data.adapter.scale, self.options.zoomLevels[self.currentZoomLevel]);
+                },
+                reset: function resetOverview() {
+                    self.emit('zoom.update', self.options.zoomLevels[self.currentZoomLevel], self.waveform.waveformOverview.data.adapter.scale);
+                }
+            };
+        }
+    },
 });
 module.exports = Peaks;
 },{"EventEmitter":2,"peaks/player/player":20,"peaks/player/player.keyboard":21,"peaks/waveform/waveform.core":27,"peaks/waveform/waveform.mixins":28}],16:[function(require,module,exports){
@@ -18232,17 +18269,20 @@ module.exports = function (peaks) {
         }
         return view;
     });
-    var createSegmentWaveform = function (id, startTime, endTime, editable, color, labelText,segmentId) {
+    //change by hongqx  ads segment.segmentId
+    var createSegmentWaveform = function (id, startTime, endTime, editable, color, labelText, segmentId) {
         var segment = {
                 id: id,
                 startTime: startTime,
                 endTime: endTime,
-                segmentId: segmentId,
                 labelText: labelText || '',
                 color: color || getSegmentColor(),
+                segmentId : segmentId,
                 editable: editable
             };
+        window.zoomNodes = window.zoomNodes || [];
         var segmentZoomGroup = new Konva.Group();
+        window.zoomNodes.push(segmentZoomGroup);
         var segmentOverviewGroup = new Konva.Group();
         var segmentGroups = [
                 segmentZoomGroup,
@@ -18358,9 +18398,7 @@ module.exports = function (peaks) {
         this.segments.forEach(updateSegmentWaveform);
         this.render();
     };
-    //添加id  add by hongqx
-    this.createSegment = function (startTime, endTime, editable, color, labelText,segmentId) {
-        //var segmentId = id ? id : 'segment' + self.segments.length;
+    this.createSegment = function (startTime, endTime, editable, color, labelText, segmentId) {
         var id = 'segment' + self.segments.length;
         if (startTime >= 0 === false) {
             throw new TypeError('[waveform.segments.createSegment] startTime should be a positive value');
@@ -18371,7 +18409,7 @@ module.exports = function (peaks) {
         if (endTime > startTime === false) {
             throw new RangeError('[waveform.segments.createSegment] endTime should be higher than startTime');
         }
-        var segment = createSegmentWaveform(id, startTime, endTime, editable, color, labelText,segmentId);
+        var segment = createSegmentWaveform(id, startTime, endTime, editable, color, labelText, segmentId);
         updateSegmentWaveform(segment);
         self.segments.push(segment);
         return segment;
@@ -18386,9 +18424,21 @@ module.exports = function (peaks) {
         });
         if (typeof index === 'number') {
             segment = this.segments[index];
+            if (window.zoomNodes) {
+              for (var i = 0; i < window.zoomNodes.length; i++) {
+                var item = window.zoomNodes[i];
+                if (item._id === segment.zoom._id) {
+                  window.zoomNodes.splice(i, 1);
+                  break;
+                }
+              }
+            }
+            
+            
             segment.overview.destroy();
             segment.zoom.destroy();
         }
+
         return index;
     };
     this.removeAll = function removeAllSegments() {
@@ -19209,20 +19259,40 @@ var createHandle = function (height, color, inMarker) {
         var group = new Konva.Group({
                 draggable: draggable,
                 dragBoundFunc: function (pos) {
-                    var event = window.event;
-                   
-                    if (!event.target.draggable) {
-                      //return;
+                    if (window.zoomNodes.length >= 1) {
+                      window.zoomNodes.sort(function (item1, item2) {
+                        return (item1.inMarker.attrs.x - item2.inMarker.attrs.x);
+                      })
                     }
-                    var limit;
+                    var index = 0;
+                    for (var i = 0; i < window.zoomNodes.length; i++) {
+                      var item = window.zoomNodes[i];
+                      if (item.inMarker.attrs.x === segment.inMarker.attrs.x) {
+                          index = i;
+                          break;
+                      }
+                    }
+
+                    var leftLimit = '';
+                    var rightLimit = '';
                     if (inMarker) {
-                        limit = segment.outMarker.getX() - segment.outMarker.getWidth();
-                        if (pos.x > limit)
-                            pos.x = limit;
+                        rightLimit = segment.outMarker.getX() - segment.outMarker.getWidth();
+                        leftLimit = index ? window.zoomNodes[index - 1].outMarker.attrs.x : '';
+                        if (pos.x > rightLimit) {
+                           pos.x = rightLimit;
+                        }
+                        if (leftLimit && pos.x < leftLimit) {
+                            pos.x = leftLimit;
+                        }
                     } else {
-                        limit = segment.inMarker.getX() + segment.inMarker.getWidth();
-                        if (pos.x < limit)
-                            pos.x = limit;
+                        leftLimit = segment.inMarker.getX() + segment.inMarker.getWidth();
+                        rightLimit = index >= window.zoomNodes.length - 1 ? '' : window.zoomNodes[index + 1].inMarker.attrs.x;
+                        if (pos.x < leftLimit) {
+                          pos.x = leftLimit;
+                        }
+                        if (rightLimit && pos.x > rightLimit) {
+                          pos.x = rightLimit;
+                        }
                     }
                     return {
                         x: pos.x,

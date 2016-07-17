@@ -1,14 +1,14 @@
 requirejs.config({
     paths: {
-      peaks: 'http://10.10.151.56:3002/threeParty/peaks',
-      jquery: "http://10.10.151.56:3002/threeParty/jquery-2.1.4.min",
-      utility: 'http://10.10.151.56:3002/js/utility',
-      segmentPart: 'http://10.10.151.56:3002/js/segmentPart',
-      mCustomScrollbar : "http://10.10.151.56:3002/threeParty/jquery.mCustomScrollbar.concat.min",
-      localstorage:"http://10.10.151.56:3002/js/localstorage",
-      videoPlayer:"http://10.10.151.56:3002/js/videoPlayer",
-      videoInfo:"http://10.10.151.56:3002/js/videoInfo",
-      subtitleAxis:"http://10.10.151.56:3002/js/subtitleAxis"
+      peaks: 'http://192.168.1.124:3001/threeParty/peaks',
+      jquery: "http://192.168.1.124:3001/threeParty/jquery-2.1.4.min",
+      utility: 'http://192.168.1.124:3001/js/utility',
+      segmentPart: 'http://192.168.1.124:3001/js/segmentPart',
+      mCustomScrollbar : "http://192.168.1.124:3001/threeParty/jquery.mCustomScrollbar.concat.min",
+      localstorage:"http://192.168.1.124:3001/js/localstorage",
+      videoPlayer:"http://192.168.1.124:3001/js/videoPlayer",
+      videoInfo:"http://192.168.1.124:3001/js/videoInfo",
+      subtitleAxis:"http://192.168.1.124:3001/js/subtitleAxis"
     }
 });
 var Control ;
@@ -32,7 +32,7 @@ require(["jquery","videoPlayer","videoInfo","subtitleAxis","localstorage"], func
          token : _userInfo.token,
          username : _userInfo.username,
          nickname : _userInfo.nickname,
-         taskType:1,
+         language : _userInfo.language,
          errorCallBack : Control.course.showErrorNote
      };
      

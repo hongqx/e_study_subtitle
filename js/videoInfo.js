@@ -18,7 +18,8 @@ var userInfo = function(){
         token : Cookie.get("token"),
         videoId : Cookie.get("videoId"),
         courseId : Cookie.get("courseId"),
-        taskType : Cookie.get("taskType")
+        language : Cookie.get("language"),
+        action : Cookie.get("action")
     };
 };
 
@@ -219,7 +220,7 @@ Course.prototype = {
     changePlayerTime : function(startTime, endTime){
       if(this.player){
          this.player.setPlayTime(startTime,endTime);
-         this.player.play();
+         //this.player.play();
       }
     }
 

@@ -234,7 +234,8 @@ header {
     top: 50%;
     left: 50%;
     margin: -31px 0 0 -31px;
-    cursor: pointer
+    cursor: pointer;
+    z-index: 100;
 }
 
 .video-wrap .playbtn button {
@@ -849,6 +850,7 @@ footer .copyright{
     /*display: table*/;
     display: block;
     width:100%;
+    height: 80px;
 }
 .subtitle .sub-content .txt , .subtitle .sub-content textarea{
     overflow-x: hidden;

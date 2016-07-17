@@ -9,8 +9,8 @@
     <link rel="bookmark" href="http://gcdp.oss-cn-qingdao.aliyuncs.com/201604/29/1461918506617_4526.ico" type="image/x-icon" />
     <!-- 192.168.1.154
 192.168.1.154<link rel="stylesheet" type="text/css" href="http://m.yxgapp.com/d/mooc/webClient/css/yxgstyle.min.css" /> -->
-    <link rel="stylesheet" type="text/css" href="http://10.10.151.56:3002/css/style.css" />
-    <link rel="stylesheet" type="text/css" href="http://10.10.151.56:3002/css/jquery.mCustomScrollbar.css" />
+    <link rel="stylesheet" type="text/css" href="http://192.168.1.124:3001/css/style.css" />
+    <link rel="stylesheet" type="text/css" href="http://192.168.1.124:3001/css/jquery.mCustomScrollbar.css" />
     <style type="text/css">
         #titles {
         font-family: 'Helvetica neue', Helvetica, Arial, sans-serif;
@@ -168,6 +168,7 @@
                
            </div>
         </div>
+
     </section>
     <footer>
         <div class="copyright">译学馆 2016 Copyright, All rights reserved. </div>
@@ -187,8 +188,16 @@
             <a class="layui-layer-btn0" target="_self">继续访问</a>
         </div>
     </div>
-    <script src="http://10.10.151.56:3002/threeParty/require.js"></script>
-    <script src="http://10.10.151.56:3002/js/init.js"></script>
+    <div class="layui-layer" style="display:none;" id="js_delete" type="dialog" times="9" showtime="0" contype="string">
+        <div class="layui-layer-title" style="cursor: move; padding: 0 20px 0 20px;text-align: center;color: #E2E261;font-size: 16px;" move="ok">警告！</div>
+        <div class="layui-layer-content"></div>
+        <div class="layui-layer-btn" style="padding:0 28px 16px">
+            <a class="layui-layer-btn0" target="_self" style="float: left;">确定</a>
+            <a class="layui-layer-btn0" target="_self" style="right: 10px;">取消</a>
+        </div>
+    </div>
+    <script src="http://192.168.1.124:3001/threeParty/require.js"></script>
+    <script src="http://192.168.1.124:3001/js/init.js"></script>
       <script>
         // requirejs.config({
         //   paths: {
