@@ -32,23 +32,6 @@ define(['jquery'], function ($) {
         getLength: function (id) {
             var content = $('#' + id).val();
             return content.split(/\s+/).length;
-        },
-
-        /** 
-         * 更新显示li显示数据 TODO 再抽象出来
-         *
-         * @param {segment} string segment
-         */
-        updateData: function (segment) {
-            var textId = 'text_' + segment.id;
-            globalSegments[textId].startTime = utility.getTime(segment.startTime);
-            globalSegments[textId].alltime = Math.round((segment.endTime - segment.startTime) * 100) / 100;
-            
-            var wps = Math.round(globalSegments[textId].wordsCount / globalSegments[textId].alltime * 100) / 100;
-
-            $('#text_' + segment.id + ' .start-time').html(globalSegments[textId].startTime);
-            $('#text_' + segment.id + ' .js_alltime').html(globalSegments[textId].alltime + 'seconds');
-            $('#text_' + segment.id + ' .js_wps').html(wps + 'WPS');
         }
     };
 
