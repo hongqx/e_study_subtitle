@@ -1,4 +1,4 @@
-define(['jquery','peaks','segmentPart','mCustomScrollbar'], function ($, Peaks, utility, segmentPart,mCustomScrollbar){
+define(['jquery','peaks','segmentPart','mCustomScrollbar'], function ($, Peaks, segmentPart,mCustomScrollbar){
   var subtitleAxis = {};
   window.subtitleAxis = subtitleAxis;
   //相关接口数据

@@ -1,18 +1,18 @@
 requirejs.config({
     paths: {
+      jquery: "http://m.yxgapp.com/d/threeParty/jquery1_11_3.min",
+      mCustomScrollbar : "http://m.yxgapp.com/d/threeParty/jquery.mCustomScrollbar.concat.min",
       peaks: 'http://10.10.151.24:3003/threeParty/peaks.min',
-      jquery: "http://10.10.151.24:3003/threeParty/jquery-2.1.4.min",
-      utility: 'http://10.10.151.24:3003/js/utility',
       segmentPart: 'http://10.10.151.24:3003/js/segmentPart',
-      mCustomScrollbar : "http://10.10.151.24:3003/threeParty/jquery.mCustomScrollbar.concat.min",
-      localstorage:"http://10.10.151.24:3003/js/localstorage",
-      videoPlayer:"http://10.10.151.24:3003/js/videoPlayer",
-      videoInfo:"http://10.10.151.24:3003/js/videoInfo",
       subtitleAxis:"http://10.10.151.24:3003/js/subtitleAxis"
+      control:"http://10.10.151.24:3003/subtitlecontrol"
+     /* localstorage:"http://10.10.151.24:3003/js/localstorage",
+      videoPlayer:"http://10.10.151.24:3003/js/videoPlayer",
+      videoInfo:"http://10.10.151.24:3003/js/videoInfo",*/
     }
 });
 var Control ;
-require(["jquery","videoPlayer","videoInfo","subtitleAxis","localstorage"], function(jquery,player,videoInfo,subtitleAxis,localstorage,mCustomScrollbar) {
+require(["jquery","control","subtitleAxis","mCustomScrollbar"], function(jquery,control,subtitleAxis,mCustomScrollbar) {
    function initVideoInfo(){
      Control = {
 

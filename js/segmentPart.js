@@ -21,7 +21,7 @@ define(['jquery', 'peaks'], function ($, peaks) {
             formatTime += seconds >= 10 ? seconds : '0' + seconds;
             return formatTime;
         }
-    }
+    };
     /**
      * 添加textarea
      *
