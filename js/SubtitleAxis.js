@@ -157,7 +157,7 @@ define(['jquery','peaks','segmentPart','mCustomScrollbar'], function ($, Peaks, 
       
       //更新播放器的播放时间段
       var _item = this.subtitles.subtitleItems[this.curIndex];
-      this.changePlayerTime(_item.startTime, _item.endTime);
+      this.changeCurrentTime(_item.startTime, _item.endTime);
 
       //进行相关事件的绑定
       this.addEvent();
@@ -202,6 +202,9 @@ define(['jquery','peaks','segmentPart','mCustomScrollbar'], function ($, Peaks, 
             _newseg.editable = true;
             _newseg.id = _item.id;
             _newseg.segmentId = _item.id;
+
+            _newseg.overview = "Kinetic.Group";
+            _newseg.zoom = "Kinetic.Group";
             _newItem.subtitleItemId = _item.id;
             _newItem.isDifficult =  3;
             if(_iLen === 0){
@@ -272,7 +275,15 @@ define(['jquery','peaks','segmentPart','mCustomScrollbar'], function ($, Peaks, 
    * @return {[type]} [description]
    */
   subtitleAxis.initSegments = function(){
-     // TODO 再看是否有必要留着
+    var segments = this.subtitles.segments, i = 0, _len = segments.length;
+    for(; i < _len ; i++){
+        if(i % 2 === 0){
+            this.subtitles.segments[i].color = "#292a2b";
+        }else{
+            this.subtitles.segments[i].color = "#0c204c";
+        }
+    }
+    // TODO 再看是否有必要留着
     window.globalSegments = {};
     // 储存根据starttime排序的片段，数值为{id: '', startime: ''}
     window.orderedSegments = [];
@@ -280,8 +291,8 @@ define(['jquery','peaks','segmentPart','mCustomScrollbar'], function ($, Peaks, 
       container: document.getElementById('peaks-container'),
       mediaElement: document.querySelector('video'),
       dataUri: {
-        arraybuffer: 'http://cdn.yxgapp.com/wave_map_file/'+this.options.videoId+'.dat',
-        json: 'http://cdn.yxgapp.com/wave_map_file/'+this.options.videoId+'.json'
+        arraybuffer: 'http://m.yxgapp.com/wave_map_file/'+this.options.videoId+'.dat',
+        json: 'http://m.yxgapp.com/wave_map_file/'+this.options.videoId+'.json'
       },
       keyboard: false,
       height: 150,
@@ -290,7 +301,7 @@ define(['jquery','peaks','segmentPart','mCustomScrollbar'], function ($, Peaks, 
       // Colour for the zoomed in waveform
       zoomWaveformColor: 'rgba(0, 225, 128, 1)',
       // Colour for the overview waveform
-      overviewWaveformColor: '#F7F3F3',
+      overviewWaveformColor: '#f7f7f7',
       // Colour of the play head(move line)
       playheadColor: 'rgba(0, 0, 0, 1)',
       // Colour of the axis gridlines
@@ -299,7 +310,11 @@ define(['jquery','peaks','segmentPart','mCustomScrollbar'], function ($, Peaks, 
       axisLabelColor: '#aaa',
       // 覆盖在总体波形图上面的矩形宽度
       zoomLevels: [512, 1024, 2048, 4096],
-      pointMarkerColor:     'red', //Color for the point marker
+      pointMarkerColor:     '#FF0000', //Color for the point marker
+      inMarkerColor: 'red',
+
+      // Colour for the out marker of segments
+      outMarkerColor: '#a0a0a0',
       /**
        * Colour for the in marker of segments
        */
@@ -308,7 +323,9 @@ define(['jquery','peaks','segmentPart','mCustomScrollbar'], function ($, Peaks, 
        * Colour for the out marker of segments
        */
       segments : this.subtitles.segments,
-      outMarkerColor:        'red',
+      //每一个时间抽的颜色非随机
+      randomizeSegmentColor : false,
+      overviewHighlightRectangleColor : "red"
     };
     this.peaksInstance = Peaks.init(options);
     this.peaksInstance.zoom.zoomOut();
@@ -684,8 +701,8 @@ define(['jquery','peaks','segmentPart','mCustomScrollbar'], function ($, Peaks, 
    * 根据时间轴当前时间找到当前的时间轴的索引
    * @return {[type]} [description]
    */
-  subtitleAxis.findCurrentIndexByCurrentTime = function(){
-      var _currentTime = this.peaksInstance.time.getCurrentTime(),
+  subtitleAxis.findCurrentIndexByCurrentTime = function(_time){
+      var _currentTime = _time;
           i = 0 ,_len = this.subtitles.segments.length;
       var _segment = null,_index = -1;
       for(; i < _len ;i++){
@@ -887,7 +904,7 @@ define(['jquery','peaks','segmentPart','mCustomScrollbar'], function ($, Peaks, 
        
        //更新播放器播放时间
        var _item = this.subtitles.subtitleItems[this.curIndex];
-       this.changePlayerTime(_item.startTime/1000, _item.endTime/1000);
+       this.changeCurrentTime(_item.startTime/1000, _item.endTime/1000);
        this.peaksInstance.time.setCurrentTime(_item.startTime/1000);
        this.scrollTo(this.curIndex);
   };
@@ -1022,12 +1039,12 @@ define(['jquery','peaks','segmentPart','mCustomScrollbar'], function ($, Peaks, 
    * @param  {Int} endTime   播放暂停时间 s
    * @return {[type]}           [description]
    */
-  subtitleAxis.changePlayerTime = function(startTime,endTime){
-      Control.course.changePlayerTime(startTime, null);
+  subtitleAxis.changeCurrentTime = function(startTime,endTime){
+      this.peaksInstance.time.setCurrentTime(startTime);
   };
 
   subtitleAxis.playCurrent = function(){
-      var _index = this.findCurrentIndexByCurrentTime();
+      var _index = this.findCurrentIndexByCurrentTime(this.peaksInstance.time.getCurrentTime());
       this.curSIndex = _index;
       if(_index >=0 ){
           var _startTime =  this.subtitles.segments[_index].startTime;

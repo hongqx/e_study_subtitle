@@ -98,7 +98,7 @@ define(['jquery', 'peaks'], function ($, peaks) {
             return;
         }
         if (!segment.segmentId) {
-            segment.segmentId = 'b' + new Date().getTime();
+            segment.segmentId = 'b_' + new Date().getTime();
         }
         var i = 0, len = orderedSegments.length;
         while (i < len && segment.startTime > orderedSegments[i].startTime) {
