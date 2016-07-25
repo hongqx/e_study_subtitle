@@ -4,10 +4,10 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
     <meta charset="UTF-8">
-    <title>test</title>
+    <title>原文编辑-译学馆在线翻译</title>
     <link rel="shortcut icon" href="http://gcdp.oss-cn-qingdao.aliyuncs.com/201604/29/1461918506617_4526.ico" type="image/x-icon" />
     <link rel="bookmark" href="http://gcdp.oss-cn-qingdao.aliyuncs.com/201604/29/1461918506617_4526.ico" type="image/x-icon" />
-    <link rel="stylesheet" type="text/css" href="http://m.yxgapp.com/d/mooc/webClient/css/yxgstyle.min.css" /> 
+    <link rel="stylesheet" type="text/css" href="http://m.yxgapp.com/d/mooc/webClient/css/yxgstyle.min.css?_20160707" />
     <style type="text/css">
         #titles {
         font-family: 'Helvetica neue', Helvetica, Arial, sans-serif;
@@ -17,7 +17,7 @@
         margin: 24px auto;
         /*width: 1000px;*/
       }
- 
+
       .zoom-container,.overview-container{
         box-shadow: 3px 3px 20px #919191;
         margin: 0 0 24px 0;
@@ -27,11 +27,8 @@
       }
 
       .overview-container {
-        height: 80px;
+        height: 85px;
         background-color: black;
-      }
-      .zoom-container {
-        background-color: #eae4e4;
       }
 
       #second-waveform-visualiser-container [class*="-container"] {
@@ -90,7 +87,7 @@
             <dl class="module instruction">
                 <dt>流程说明</dt>
                 <dd>1.声波图及上方的时间轴可以左右拖动</dd>
-                <dd>2.双击声波线上空白区域添加一个市场1s的轴</dd>
+                <dd>2.双击声波线上空白区域添加一个时长1s的轴</dd>
                 <dd>3.单击声波线上已经完成的时间轴，该轴变为编辑模式，此时拖动交表或者轴的边线可以调整轴时长</dd>
                 <dd>4.拖动蓝色区域可调整当前屏声波图的位置</dd>
                 <dd>5.整体调整时间轴请使用App操作</dd>
@@ -108,62 +105,7 @@
            </div>
            <div class="tranlist" id="subTitleDom">
                <ul class="sublist" >
-                  <!--  <li data-pindex="29" data-index="29">
-                      <div class="subtitle">
-                            <div class="subspan">
-                                <span class="start-time">00:10</span>
-                            </div>
-                            <div class="sub-content">
-                                <div class="txt">Hi everyone, I'm Amy.</div>
-                                <textarea name="" id="" cols="30" rows="10">Hi everyone, I'm Amy.</textarea>
-                            </div>
-                             <div class="subspan">
-                                <span>3WPS</span>
-                                <span>6.Seconds</span>
-                                <span>30word</span>
-                                <span class="delete-icon">——</span>
-                            </div>
-                           
-                      </div>
-                      <div class="buttomline"></div>
-                     </li>
-                     <li class="active" data-pindex="29" data-index="29">
-                      <div class="subtitle">
-                             <div class="subspan">
-                                <span class="start-time">00:10</span>
-                            </div>
-                            <div class="sub-content">
-                                 <div class="txt">Koreanclass101.com Hanna Hanna Hangul</div>
-                                 <textarea name="" id="" cols="30" rows="10">Koreanclass101.com Hanna Hanna Hangul</textarea>
-                            </div>
-                            <div class="subspan">
-                                <span>3WPS</span>
-                                <span>6.Seconds</span>
-                                <span>30word</span>
-                                <span class="delete-icon">——</span>
-                            </div>
-                      </div>
-                      <div class="buttomline"></div>
-                     </li>
-                     <li data-pindex="29" data-index="29">
-                      <div class="subtitle">
-                             <div class="subspan">
-                                <span class="start-time">00:10</span>
-                            </div>
-                            <div class="sub-content">
-                                <div class="txt">and welcome to Hanna Hanna Hangul on Koreanclass101.com</div>
-                                <textarea name="" id="" cols="30" rows="10"></textarea>
-                            </div>
-                            <div class="subspan">
-                                <span class="red-span">7.3WPS</span>
-                                <span>6.Seconds</span>
-                                <span>30word</span>
-                                <span class="delete-icon">——</span>
-                            </div>
-                           
-                      </div>
-                      <div class="buttomline"></div>
-                     </li> -->
+                 
                </ul>
                
            </div>
@@ -196,66 +138,19 @@
             <a class="layui-layer-btn0"  id="js_cancel"  target="_self" style="right: 10px;">取消</a>
         </div>
     </div>
-    <script type="text/javascript" src="http://m.yxgapp.com/d/threeParty/jquery1_11_3.min.js"></script>
     <script src="http://m.yxgapp.com/d/threeParty/require.js"></script>
     <script type="text/javascript">
         requirejs.config({
             paths: {
-              jquery: "http://m.yxgapp.com/d/threeParty/jquery1_11_3.min",
-              mCustomScrollbar : "http://m.yxgapp.com/d/threeParty/jquery.mCustomScrollbar.concat.min",
               peaks: 'http://m.yxgapp.com/d/threeParty/peaks.min',
-              segmentPart: 'http://m.yxgapp.com/d/mooc/webClient/js/segmentPart',
-              subtitleAxis:"http://m.yxgapp.com/d/mooc/webClient/js/subtitleAxis"
+              jquery: "http://m.yxgapp.com/d/threeParty/jquery1_11_3.min",
+              segmentPart: 'http://m.yxgapp.com/d/mooc/webClient/js/segmentPart.min',
+              mCustomScrollbar : "http://m.yxgapp.com/d/threeParty/jquery.mCustomScrollbar.concat.min",
+              subtitleAxis:"http://m.yxgapp.com/d/mooc/webClient/js/subtitleAxis.min"
             }
         });
     </script>
-    <script src="http://m.yxgapp.com/d/mooc/webClient/js/subtitlecontrol.js"></script>
-   <!-- <script src="http://10.10.241.85:3003/js/subtitlecontrol.js"></script>  -->
-      <script>
-        // requirejs.config({
-        //   paths: {
-        //     peaks: 'http://10.10.243.76:3002/threeParty/peaks.min',
-        //     $ : "http://m.yxgapp.com/d/threeParty/jquery1_11_3.min",
-        //     mCustomScrollbar : "http://m.yxgapp.com/d/threeParty/jquery.mCustomScrollbar.concat.min",
-        //     localstorage:"http://10.10.243.76:3002/js/localstorage",
-        //     videoPlayer:"http://10.10.243.76:3002/js/videoPlayer",
-        //     videoInfo:"http://10.10.243.76:3002/js/videoInfo",
-        //     subtitleAxis:"http://10.10.243.76:3002/js/SubtitleAxis"
-        //   }
-        // });
-        // var Control;
-        // require(['$',"videoPlayer","localstorage","subtitleAxis","videoInfo"], function($,player,localstorage,subtitleAxis,videoInfo){
-        //     Control = initVideoInfo();
-        // });
-
-        // require(['peaks'], function(Peaks){
-        //   var options = {
-        //     container: document.getElementById('peaks-container'),
-        //     mediaElement: document.querySelector('video'),
-        //     dataUri: {
-        //       arraybuffer: 'http://m.yxgapp.com/wave_map_file/ad512d90-8a31-4df4-872b-876a378824bd.dat',
-        //       json: 'http://m.yxgapp.com/wave_map_file/ad512d90-8a31-4df4-872b-876a378824bd.json'
-
-
-        //     },
-        //     keyboard: false,
-        //     height: 150
-        //   };
-
-        //   var peaksInstance = Peaks.init(options);
-        //});
-    </script>
-   <!--  <script type="text/javascript" src="http://10.10.243.76:3002/data/ad512d90-8a31-4df4-872b-876a378824bd.js"></script> -->
-   <!--  <script type="text/javascript" src="http://m.yxgapp.com/d/threeParty/jquery1_11_3.min.js"></script>
-    <script type="text/javascript" src="http://m.yxgapp.com/d/threeParty/jquery.mCustomScrollbar.concat.min.js"></script>
-    <script type="text/javascript" src="http://10.10.243.76:3002/js/localstorage.js"></script>
-    <script type="text/javascript" src="http://10.10.243.76:3002/js/videoPlayer.js"></script>
-    <script type="text/javascript" src="http://10.10.243.76:3002/js/videoInfo.js"></script> -->
-    <!--
-    <script type="text/javascript" src="http://10.10.243.76:3002/threeParty/peaks.js"></script>
-    <script type="text/javascript" src="http://10.10.243.76:3002/js/localstorage.js"></script>
-    <script type="text/javascript" src="http://10.10.243.76:3002/js/videoPlayer.js"></script>
-    <script type="text/javascript" src="http://10.10.243.76:3002/js/appinit.js"></script> -->
+    <script src="http://m.yxgapp.com/d/mooc/webClient/js/subtitlecontrol.min.js"></script>
 </body>
 
 </html>

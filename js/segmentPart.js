@@ -208,7 +208,7 @@ define(['jquery', 'peaks'], function ($, peaks) {
         }
         for (var i = 0, len = allSegments.length; i < len; i++) {
             if (!allSegments[i].segmentId) {
-                allSegments[i].segmentId = 'b' + new Date().getTime();
+                allSegments[i].segmentId = 'b_' + new Date().getTime();
             }
         }
         // 添加后重新排序

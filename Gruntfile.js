@@ -4,7 +4,7 @@ module.exports = function(grunt){
 		concat:{
 		 	options:{
 		 		separator:"/*--------*/\n",
-		 		banner:'/*! <%= pkg.name %>\n *version <%= pkg.version %>\n *<%= grunt.template.today("yyyy-mm-dd  hh:MM:ss") %>\n *<%= pkg.description %>\n */\n',
+		 		banner:'/*!<%= pkg.name %>\n *version <%= pkg.version %>\n *<%= grunt.template.today("yyyy-mm-dd  hh:MM:ss") %>\n *<%= pkg.description %>\n */\n',
 		 		footer:''
 		 	},
 		 	dist:{
@@ -25,7 +25,7 @@ module.exports = function(grunt){
 		uglify : {
 	   		options:{
 	   			//定义banner注释，将插入到输出的文件顶部
-	   			banner:'/*! <%= pkg.name %> version<%= pkg.version %> <%= grunt.template.today("yyyy-mm-dd  hh:MM:ss") %>*/\n',
+	   			banner:'/*! <%= pkg.name %> version<%= pkg.version %>  <%= grunt.template.today("yyyy-mm-dd  hh:MM:ss")%>*/\n',
 	   			mangle:{
 	   				except:['$scope','userController']//压缩的时候忽略这几个字符
 	   			}
@@ -41,13 +41,11 @@ module.exports = function(grunt){
 	   	cssmin : {
 	   		options:{
 	   			//定义banner注释，将插入到输出的文件顶部
-	   			banner:'/*! <%= pkg.name %> version<%= pkg.version %> <%= grunt.template.today("yyyy-mm-dd  hh:MM:ss") %>*/\n'
+	   			banner:''
 	   		},
 	   		dist : {
-	   			css :{
-	   				src : "css/yxgstyle.css",
-	   				dest : 'build/css/yxgstyle.min.css'
-	   			}
+	   			src : "css/yxgstyle.css",
+	   			dest : 'build/css/yxgstyle.min.css'
 	   		}
 	   	}
 	});
@@ -56,5 +54,4 @@ module.exports = function(grunt){
 	grunt.loadNpmTasks('grunt-css');
     //注册任务
 	grunt.registerTask('default',['concat','uglify','cssmin']);
-	grunt.registerTask('default',['concat']);
 };
