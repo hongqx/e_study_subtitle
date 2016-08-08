@@ -385,10 +385,20 @@ define(['jquery','mCustomScrollbar','peaks','segmentPart'], function ($, mCustom
       }
       this.container.html(this.ulDom);
       this.lis = $(this.container).find("li");
-      $("#"+this.containerId).mCustomScrollbar({
-          theme:"my-theme",
-          mouseWheel:{scrollAmount:131},
-      });
+      try{
+          $("#"+this.containerId).mCustomScrollbar({
+              theme:"my-theme",
+              mouseWheel:{scrollAmount:131},
+          });
+      }catch(e){
+          var _self = this;
+          setTimeout(function(){
+            $("#"+_self.containerId).mCustomScrollbar({
+                theme:"my-theme",
+                mouseWheel:{scrollAmount:131},
+            });
+          },500);
+      }
   };
  
   /**
