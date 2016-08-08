@@ -1,6 +1,6 @@
 /*!estudysubtitle
  *version 1.1.0
- *2016-07-25  06:20:20
+ *2016-08-01  05:17:04
  *完善提交逻辑，时间轴线和字幕列表联动
  */
 var LocalStorage = {
@@ -584,7 +584,7 @@ Course.prototype = {
 
 };/*--------*/
 var Control ;
-require(["subtitleAxis"], function(subtitleAxis) {
+require(["jquery","subtitleAxis"], function($, subtitleAxis) {
    function initVideoInfo(){
      Control = {
 
@@ -608,7 +608,7 @@ require(["subtitleAxis"], function(subtitleAxis) {
          errorCallBack : Control.course.showErrorNote
      };
      
-     Control.subtitleAxis = subtitleAxis.init(segSubtitlsoptions,"#subTitleDom");
+     Control.subtitleAxis = subtitleAxis.init(segSubtitlsoptions,"subTitleDom");
      return Control;
    }
 

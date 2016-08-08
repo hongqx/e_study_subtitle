@@ -22,6 +22,86 @@ define(['jquery', 'peaks'], function ($, peaks) {
             return formatTime;
         }
     };
+    
+    /**
+     * 获取当前时间点所在的时间轴对象
+     * @param  {object} peaksInstance peak对象
+     * @return {int}   如果返回去1-时间空隙不够  返回0 说明改段已经存在时间轴  返回对象 可以添加
+     */
+    function getSegmentIndex(peaksInstance){
+        var _currentTime = peaksInstance.time.getCurrentTime(),
+            _oldSegments = peaksInstance.segments.getSegments();
+        var  i = 0,_len = _oldSegments.length;
+        var newSegment = {};
+        if( _len === 0){
+            newSegment.startTime = _currentTime < 1 ? 0 : _currentTime;
+            newSegment.endTime = newSegment.startTime + 1;
+            newSegment.index = 0;
+            return newSegment;
+        }
+        
+        if(_currentTime < _oldSegments[0].startTime){
+              if(_oldSegments[0].startTime < 1){
+                return 0;
+              }
+              if(_currentTime < 1){
+                  newSegment.startTime  = 0;
+              }else if(_oldSegments[0].startTime - _currentTime >= 1){
+                  newSegment.startTime = _currentTime;
+              }else{
+                  newSegment.startTime = _currentTime - 1;
+              }
+              //newSegment.startTime = _currentTime < 1  ||  _oldSegments[0].startTime - _currentTime < 1 && ? 0 : _currentTime;
+              newSegment.endTime = newSegment.startTime + 1;
+              newSegment.index = 0;
+              return newSegment;
+        }
+        
+        //如果是大于则返回该值
+        if(_currentTime > _oldSegments[_len-1].endTime){
+            var _duration = peaksInstance.time.getDuration(),
+                _oldEndtime = _oldSegments[_len-1].endTime;
+            //剩下的时间空间不足1s
+            if(_duration - _oldEndtime < 1){
+               return 0;
+            }else if(_duration === _oldEndtime){
+               return 1;
+            }
+            
+            newSegment.startTime = (_duration - _currentTime < 1 || _currentTime - _oldEndtime < 1) ? _oldEndtime : _currentTime;
+            newSegment.endTime = newSegment.startTime + 1;
+            newSegment.index = _len;
+            return newSegment;
+        }
+
+        var index = -1;
+        while(i < _len){
+            if(_currentTime > _oldSegments[i].startTime && _currentTime < _oldSegments[i].endTime){
+                return 1;
+            }
+            if(_currentTime > _oldSegments[i].endTime && _currentTime < _oldSegments[i+1].startTime){
+                index = i;
+                break;
+            }else{
+                i++;
+            }
+        }
+        if(index < 0){
+          return 1;
+        }
+        //确定比较的上一个的endTime
+        var _oldEndtime  = _oldSegments[index].endTime ;
+        if(_oldSegments[index + 1].startTime - _oldEndtime === 0){
+           return 1;
+        }else if(_oldSegments[index + 1].startTime - _oldEndtime < 1){
+           return 0;
+        }else{
+            newSegment.startTime = (_currentTime - _oldSegments < 1) || (_oldSegments[index + 1].startTime - _currentTime < 1) ? _oldEndtime : _currentTime;
+            newSegment.endTime =  newSegment.startTime + 1;
+            newSegment.index = index;
+            return newSegment;
+        }
+    };
     /**
      * 添加textarea
      *
@@ -178,42 +258,49 @@ define(['jquery', 'peaks'], function ($, peaks) {
         }
         return true;
     };
-
+    /**
+     * 根据当前时间获取时间轴的索引
+     * @param  {Object} peaksInstance [description]
+     * @return {int}               -1 当前位置没有是时间轴   大于等于0 时间轴的索引位置
+     */
+    function getIndexByCurrentTime(peaksInstance){
+        var _currentTime = peaksInstance.time.getCurrentTime(),
+            segments = peaksInstance.segments.getSegments(), i = 0,_len = segments.length;
+        if(_len === 0 || _currentTime > segments[_len-1].endTime){
+           return -1;
+        }
+        while(i < _len-1){
+          if(_currentTime >= segments[i].startTime && _currentTime <= segments[i].endTime){
+             return i;
+          }else if((i+1) < _len && _currentTime > segments[i].endTime && _currentTime < segments[i+1].startTime){
+             return -1
+          }
+          i++;
+        }
+        return -1;
+    }
     /**
      * 添加片段
      * 
      * @param {Object} instance 实例对象
      * @pram {Object} segment 片段对象
      */
-    segmentPart.addSegment = function (instance, segment) {
-        // TODO如果当前位置已经添加了，就自动focus到相应的textarea
-
-        // 如果没有传递segment就默认从当前时间开始1秒钟
-        if (!segment) {
-            segment = {
-              startTime: instance.time.getCurrentTime(),
-              endTime: instance.time.getCurrentTime() + 1,
-              editable: true
-            }
-        }
-        // 如果空白的地方小于1秒添加不成功提示删除后面的片断
-        var startTime = segment.startTime;
-        var endTime = segment.endTime;
-        var allSegments = instance.segments.getSegments();
-        if (this.processSegments(instance, segment)) {
-            instance.segments.add([segment]);   
-            // TODO调用textarea接口添加textarea
-            //addTextArea(instance);
-            
-        }
-        for (var i = 0, len = allSegments.length; i < len; i++) {
-            if (!allSegments[i].segmentId) {
-                allSegments[i].segmentId = 'b_' + new Date().getTime();
-            }
-        }
-        // 添加后重新排序
-        this.sortSegments(instance);
-        Control.subtitleAxis.addSubtitle();
+    segmentPart.addSegment = function (instance, segmentId) {
+        var segment = getSegmentIndex(instance);
+        if(segment === 0){
+          alert("时间空隙不够，无法添加");
+        }else if(segment === 1){
+            return ;
+        }else{
+            segment.editable = true;
+            segment.segmentId = segmentId ? segmentId : 'b_'+ new Date().getTime();
+            var segment = instance.segments.add([segment]);
+            Control.subtitleAxis.addSubtitle(segment);
+        }/*= {
+          startTime: peaksInstance.time.getCurrentTime(),
+          endTime: peaksInstance.time.getCurrentTime() + 5,
+          editable: true
+        };*/
     };
 
 
@@ -223,15 +310,17 @@ define(['jquery', 'peaks'], function ($, peaks) {
      * @param {Object} instance 实例
      */
     segmentPart.deleteSegment = function (instance, segmentId) {
-        // 删除当前点击的segment
-        var allSegments = instance.segments.getSegments();
-        for (var i = 0, len = allSegments.length; i < len; i++) {
-            var seg = allSegments[i];
-            if (segmentId === seg.segmentId) {
-                instance.segments.remove(seg);
-                this.sortSegments(instance);
-                len--;
-            }
+        if(segment){
+           instance.segments.remove(segment);   
+           return true;
+        }else{
+           var index = getIndexByCurrentTime(instance);
+           if(index === -1){
+              return false;
+           }else{
+              instance.segments.remove(instance.segments.getSegments()[index]);
+              return true;
+           }
         }
     };
 

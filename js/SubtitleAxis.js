@@ -1,4 +1,4 @@
-define(['jquery','peaks','segmentPart','mCustomScrollbar'], function ($, Peaks, segmentPart,mCustomScrollbar){
+define(['jquery','mCustomScrollbar','peaks','segmentPart'], function ($, mCustomScrollbar, Peaks, segmentPart){
   var subtitleAxis = {};
   window.subtitleAxis = subtitleAxis;
   //相关接口数据
@@ -86,7 +86,7 @@ define(['jquery','peaks','segmentPart','mCustomScrollbar'], function ($, Peaks, 
   subtitleAxis.init = function(options,containerId){
     this.options = options;
     this.containerId = containerId;
-    this.container = $(containerId);
+    this.container = $('#'+containerId);
 
     //本地存储key 整体数据存储
     this.localKey = this.options.videoId + "_SUBTITLEAXIS";
@@ -196,7 +196,7 @@ define(['jquery','peaks','segmentPart','mCustomScrollbar'], function ($, Peaks, 
             _newItem.startTime = _item.startTime ;
             _newItem.endTime = _item.endTime ;
 
-            _newseg.startTime = _item.startTime / 1000;
+            _newseg.startTime = _item.startTime < 0 ? 0 : _item.startTime / 1000;
             _newseg.endTime = _item.endTime / 1000;
             //_newseg.id = _item.id;
             _newseg.editable = true;
@@ -291,8 +291,8 @@ define(['jquery','peaks','segmentPart','mCustomScrollbar'], function ($, Peaks, 
       container: document.getElementById('peaks-container'),
       mediaElement: document.querySelector('video'),
       dataUri: {
-        arraybuffer: 'http://m.yxgapp.com/wave_map_file/'+this.options.videoId+'.dat',
-        json: 'http://m.yxgapp.com/wave_map_file/'+this.options.videoId+'.json'
+        arraybuffer: 'http://alicdnsub.yxgapp.com/waveMap/'+this.options.videoId+'.dat'/*,
+        json: 'http://m.yxgapp.com/wave_map_file/'+this.options.videoId+'.json'*/
       },
       keyboard: false,
       height: 150,
@@ -330,10 +330,11 @@ define(['jquery','peaks','segmentPart','mCustomScrollbar'], function ($, Peaks, 
     this.peaksInstance = Peaks.init(options);
     this.peaksInstance.zoom.zoomOut();
      var _self = subtitleAxis;
-    this.peaksInstance.on('segments.dragged', function (segment) {
+    this.peaksInstance.on('segments.dragend', function (segment) {
       console.log("-------"+segment);
-      segmentPart.draggSegment(_self.peaksInstance, segment);
+      //segmentPart.draggSegment(_self.peaksInstance, segment);
       //peaksInstance.waveform.segments.updateSegments();
+      Control.subtitleAxis.updateSubtitle(segment);
     });
     this.peaksInstance.on('dbclickAddSegment', function () {
         segmentPart.addSegment(_self.peaksInstance);
@@ -384,7 +385,7 @@ define(['jquery','peaks','segmentPart','mCustomScrollbar'], function ($, Peaks, 
       }
       this.container.html(this.ulDom);
       this.lis = $(this.container).find("li");
-      this.container.mCustomScrollbar({
+      $("#"+this.containerId).mCustomScrollbar({
           theme:"my-theme",
           mouseWheel:{scrollAmount:131},
       });
@@ -574,7 +575,7 @@ define(['jquery','peaks','segmentPart','mCustomScrollbar'], function ($, Peaks, 
    */
   subtitleAxis.addKeyDownEvent  = function(){
         var _self = this;
-        document.onkeydown = function(event){
+        document.addEventListener('keydown',function(event){
             var e = event || window.event || arguments.callee.caller.arguments[0];
             console.log("e.ctrlKey:"+e.ctrlKey+"  e.shiftKey:"+e.shiftKey+" keycode:"+e.keyCode);
             if(e.shiftKey && e.keyCode == 9 ){
@@ -600,7 +601,7 @@ define(['jquery','peaks','segmentPart','mCustomScrollbar'], function ($, Peaks, 
                      //
                }
             }
-        };
+        });
   };
   
   /**
@@ -706,7 +707,7 @@ define(['jquery','peaks','segmentPart','mCustomScrollbar'], function ($, Peaks, 
           i = 0 ,_len = this.subtitles.segments.length;
       var _segment = null,_index = -1;
       for(; i < _len ;i++){
-          if(_currentTime > this.subtitles.segments[i].startTime && _currentTime < this.subtitles.segments[i].endTime){
+          if(_currentTime >= this.subtitles.segments[i].startTime && _currentTime <= this.subtitles.segments[i].endTime){
               _segment = this.subtitles.segments[i];
               _index = i;
               break;
@@ -732,12 +733,12 @@ define(['jquery','peaks','segmentPart','mCustomScrollbar'], function ($, Peaks, 
    * @param {int} index 本次添加的时间轴插入的位置
    * @param {[type]} segs  时间轴对象
    */
-  subtitleAxis.addSubtitle = function() {
+  subtitleAxis.addSubtitle = function(segments) {
       var i = 0 , _len =  this.subtitles.segments.length;
-      var _orderSeg = orderedSegments;
-      var insertIndex = -1;
+      var _orderSeg = this.peaksInstance.segments.getSegments();
+      var insertIndex = segments[0].index;
 
-      for(; i < _len; i++){
+      /*for(; i < _len; i++){
         if(this.subtitles.segments[i].id != _orderSeg[i].segmentId){
             insertIndex =  i;
             break;
@@ -747,7 +748,7 @@ define(['jquery','peaks','segmentPart','mCustomScrollbar'], function ($, Peaks, 
       }
       if(insertIndex === -1){
            insertIndex = _orderSeg.length - 1;
-      }
+      }*/
       
 
       var _newSeg = {};
@@ -945,23 +946,23 @@ define(['jquery','peaks','segmentPart','mCustomScrollbar'], function ($, Peaks, 
                 username : _self.options.username,
                 videoId : _self.options.videoId,
                 from : 3,
-                subtitleAxises : JSON.stringify(this.newSegments)
+                subtitleAxises : JSON.stringify(_newsegs)
           };
           //更新本地缓存 提交成功之后清空
           this.updateLoacal(3);
-          getAjax("http://m.yxgapp.com/d/mooc/UpdateSubtitleAxis.json", _params ,"sendSubtitleSuccessBack","sendSubtitleErrorBack","POST");
+          getAjax("http://m.yxgapp.com/d/mooc/UpdateSubtitleAxis.json", _params ,"sendAxisSuccessBack","sendAxisErrorBack","POST");
           //LocalStorage.setItem( this.remainSKey, JSON.stringify([]) );
 
       }else{
           console.log("时间轴数据没有更新");
       }
       
-      // if( !this.interval1 ){
-      //     var _self = this;
-      //     this.interval1 = setInterval(function(){
-      //         _self.startPostInterval();
-      //     },3000);
-      // }
+      if( !this.interval1 ){
+          var _self = this;
+          this.interval1 = setInterval(function(){
+              _self.startPostInterval();
+          },3000);
+      }
     
       // this.interval1 = setInterval(function(){
       //        //var _self = subtitleAxis;
@@ -989,7 +990,7 @@ define(['jquery','peaks','segmentPart','mCustomScrollbar'], function ($, Peaks, 
    */
   subtitleAxis.sendSubtitleSuccessBack =  function(data){
       console.log("subtitle success");
-      if(data.result.resule){
+      if(data.result.result){
           this.clearLocal(2);
       }
       console.log(data);
@@ -1023,7 +1024,8 @@ define(['jquery','peaks','segmentPart','mCustomScrollbar'], function ($, Peaks, 
    * @return {[type]}      [description]
    */
   subtitleAxis.sendAxisErrorBack = function(data){
-
+      console.log("时间轴数据提交失败"+data.result.msg);
+      this.clearLocal(3);       
   };
   /**
    * 上传时间轴数据
