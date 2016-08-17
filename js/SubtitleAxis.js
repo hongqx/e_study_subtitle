@@ -702,7 +702,7 @@ define(['jquery','mCustomScrollbar','peaks','segmentPart'], function ($, mCustom
    */
   subtitleAxis.deleteSubtitleById = function(segmentId,_index){
       //移除时间轴上的数据
-      segmentPart.deleteSegment(this.peaksInstance,segmentId);
+      segmentPart.deleteSegment(this.peaksInstance,_index);
 
       //移除字幕条
       this.removeSubtitle(_index);
@@ -727,7 +727,7 @@ define(['jquery','mCustomScrollbar','peaks','segmentPart'], function ($, mCustom
   };
   
   subtitleAxis.deleteSubtitleByCurrentTime = function(){
-      var index = this.findCurrentIndexByCurrentTime();
+      var index = this.findCurrentIndexByCurrentTime(this.peaksInstance.time.getCurrentTime());
      
       if(index >= 0){
           var segmentId = this.subtitles.segments[index].segmentId;

@@ -309,9 +309,9 @@ define(['jquery', 'peaks'], function ($, peaks) {
      *
      * @param {Object} instance 实例
      */
-    segmentPart.deleteSegment = function (instance, segmentId) {
-        if(segment){
-           instance.segments.remove(segment);   
+    segmentPart.deleteSegment = function (instance,index) {
+        if(index){
+           instance.segments.remove(instance.segments.getSegments()[index]);   
            return true;
         }else{
            var index = getIndexByCurrentTime(instance);
