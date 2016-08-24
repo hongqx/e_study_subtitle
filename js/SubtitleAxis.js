@@ -1,4 +1,174 @@
-define(['jquery','mCustomScrollbar','peaks','segmentPart'], function ($, mCustomScrollbar, Peaks, segmentPart){
+define(['jquery','mCustomScrollbar','peaks'], function ($, mCustomScrollbar, Peaks){
+  var segmentPart = {};
+  window.segmentPart = segmentPart;
+  segmentPart.init = function(options,events){
+
+      this.peaksInstance = Peaks.init(options);
+      this.peaksInstance.zoom.zoomOut();
+
+      var _self = segmentPart;
+      this.peaksInstance.on('segments.dragend', function (segment) {
+          _self.updateSegment(segment);
+      });
+
+      this.peaksInstance.on('dbclickAddSegment', function () {
+          _self.addSegment();
+      });
+  };
+  /**
+  * 根据当前时间获取时间轴的索引
+  * @param  {Object} peaksInstance [description]
+  * @return {int}               -1 当前位置没有是时间轴   大于等于0 时间轴的索引位置
+  */
+  segmentPart.getIndexByCurrentTime = function(){
+        var _currentTime = this.peaksInstance.time.getCurrentTime(),
+            segments = this.peaksInstance.segments.getSegments(), i = 0,_len = segments.length;
+        if(_len === 0 || _currentTime > segments[_len-1].endTime){
+           return -1;
+        }
+        while(i < _len-1){
+          if(_currentTime >= segments[i].startTime && _currentTime <= segments[i].endTime){
+             return i;
+          }else if((i+1) < _len && _currentTime > segments[i].endTime && _currentTime < segments[i+1].startTime){
+             return -1
+          }
+          i++;
+        }
+        return -1;
+  };
+
+  /**
+   * 获取当前时间点所在的时间轴对象
+   * @param  {object} peaksInstance peak对象
+   * @return {int}   如果返回去1-时间空隙不够  返回0-说明改段已经存在时间轴  返回对象-可以添加
+   */
+  segmentPart.getSegmentIndex = function(){
+        var _currentTime = this.peaksInstance.time.getCurrentTime(),
+            _oldSegments = this.peaksInstance.segments.getSegments();
+        var  i = 0,_len = _oldSegments.length;
+        var newSegment = {};
+        if( _len === 0){
+            newSegment.startTime = _currentTime < 1 ? 0 : _currentTime;
+            newSegment.endTime = newSegment.startTime + 1;
+            newSegment.index = 0;
+            return newSegment;
+        }
+        
+        if(_currentTime < _oldSegments[0].startTime){
+              if(_oldSegments[0].startTime < 1){
+                return 0;
+              }
+              if(_currentTime < 1){
+                  newSegment.startTime  = 0;
+              }else if(_oldSegments[0].startTime - _currentTime >= 1){
+                  newSegment.startTime = _currentTime;
+              }else{
+                  newSegment.startTime = _currentTime - 1;
+              }
+              //newSegment.startTime = _currentTime < 1  ||  _oldSegments[0].startTime - _currentTime < 1 && ? 0 : _currentTime;
+              newSegment.endTime = newSegment.startTime + 1;
+              newSegment.index = 0;
+              return newSegment;
+        }
+        
+        //如果是大于则返回该值
+        if(_currentTime > _oldSegments[_len-1].endTime){
+            var _duration = this.peaksInstance.time.getDuration(),
+                _oldEndtime = _oldSegments[_len-1].endTime;
+            //剩下的时间空间不足1s
+            if(_duration - _oldEndtime < 1){
+               return 0;
+            }else if(_duration === _oldEndtime){
+               return 1;
+            }
+            
+            newSegment.startTime = (_duration - _currentTime < 1 || _currentTime - _oldEndtime < 1) ? _oldEndtime : _currentTime;
+            newSegment.endTime = newSegment.startTime + 1;
+            newSegment.index = _len;
+            return newSegment;
+        }
+
+        var index = -1;
+        while(i < _len){
+            if(_currentTime > _oldSegments[i].startTime && _currentTime < _oldSegments[i].endTime){
+                return 1;
+            }
+            if(_currentTime > _oldSegments[i].endTime && _currentTime < _oldSegments[i+1].startTime){
+                index = i;
+                break;
+            }else{
+                i++;
+            }
+        }
+        if(index < 0){
+          return 1;
+        }
+        //确定比较的上一个的endTime
+        var _oldEndtime  = _oldSegments[index].endTime ;
+        if(_oldSegments[index + 1].startTime - _oldEndtime === 0){
+           return 1;
+        }else if(_oldSegments[index + 1].startTime - _oldEndtime < 1){
+           return 0;
+        }else{
+            newSegment.startTime = (_currentTime - _oldSegments < 1) || (_oldSegments[index + 1].startTime - _currentTime < 1) ? _oldEndtime : _currentTime;
+            newSegment.endTime =  newSegment.startTime + 1;
+            newSegment.index = index;
+            return newSegment;
+        }
+  };
+
+  segmentPart.addSegment = function(segment,segmentId){
+        var segment = this.getSegmentIndex();
+        if(segment === 0){
+            alert("时间空隙不够，无法添加");
+        }else if(segment === 1){
+            return ;
+        }else{
+            segment.editable = true;
+            segment.segmentId = segmentId ? segmentId : 'b_'+ new Date().getTime();
+            var segment = this.peaksInstance.segments.add([segment]);
+            Control.subtitleAxis.addSubtitle(segment);
+        }
+  };
+  
+  segmentPart.getSegments  =  function(){
+     return this.peaksInstance.segments.getSegments();
+  };
+  segmentPart.updateSegment = function(segment){
+      Control.subtitleAxis.updateSubtitle(segment);
+  };
+
+  segmentPart.deleteSegment = function (index,segment) {
+        var _segment ,_index;
+        if(segment){
+            _segment = segment;
+        }else if(!index && index !== 0){
+            _index = this.getIndexByCurrentTime();
+            if(_index === -1){
+               return false;
+            }
+        }else{
+           _index = index;
+        }
+        var _segment = _segment ? _segment : this.peaksInstance.segments.getSegments()[_index];
+        var _startTime = _segment.startTime;
+        var _endTime = _segment.endTime;
+        var ret = this.peaksInstance.segments.removeByTime(_startTime,_endTime); 
+        if(ret.length > 0){
+           return true;
+        }else{
+           return false;
+        }
+  };
+
+  segmentPart.time = function(time){
+      if(time){
+        this.peaksInstance.time.setCurrentTime(time);
+      }
+      return this.peaksInstance.time.getCurrentTime();
+  }
+
+  /******/
   var subtitleAxis = {};
   window.subtitleAxis = subtitleAxis;
   //相关接口数据
@@ -134,6 +304,33 @@ define(['jquery','mCustomScrollbar','peaks','segmentPart'], function ($, mCustom
       //启动字幕更新数据检测提交轮循
       
   };
+ 
+  /**
+   * 对获取到的数据进行时间排序
+   * @return {} [description]
+   */
+  subtitleAxis.sort = function(subtitleItems){
+      function selectmin(arr,n, i){
+          var k = i;
+          for(var j = i+1 ;j < n; ++j) {
+              if(parseInt(arr[k].startTime) > parseInt(arr[j].startTime)){ 
+                k = j;
+              };  
+          }
+          return k;
+      }
+      var i = 0, len = subtitleItems.length;
+      for(i; i<len; i++){ 
+          var min = selectmin(subtitleItems, len, i);
+          if(min !== i){
+             console.log("min:"+min+"  i"+i);
+             var temp = subtitleItems[i];
+             subtitleItems[i] = subtitleItems[min];
+             subtitleItems[min] = temp;
+          }
+      }
+      return subtitleItems; 
+  };
   /**
    * 下载视频相关的字幕数据处理回调
    * @return {[type]} [description]
@@ -144,20 +341,25 @@ define(['jquery','mCustomScrollbar','peaks','segmentPart'], function ($, mCustom
            //this.mergeLocalItems(data.subtitle);
           _subtitle = data.subtitle;
       }
+      if(_subtitle.subtitleItems.length > 0){
+          _subtitle.subtitleItems = this.sort(_subtitle.subtitleItems);
+      }
       //处理规范下载的字幕数据
       this.subtitles =  this.dealLoadSubTitle(_subtitle);
       //var _newSubtitle  = this.dealLoadSubTitle(_subtitle);
       //与本地存储的数据合并
       //this.mergeLocalItems(this.subtitles);
       //初始化时间轴
-      this.initSegments();
+      this.segmentPart();
 
       //初始化dom结构
       this.initDom();
       
       //更新播放器的播放时间段
-      var _item = this.subtitles.subtitleItems[this.curIndex];
-      this.changeCurrentTime(_item.startTime, _item.endTime);
+      if(this.subtitles.subtitleItems.length > 0){
+          var _item = this.subtitles.subtitleItems[this.curIndex];
+          this.changeCurrentTime(_item.startTime, _item.endTime);
+      }
 
       //进行相关事件的绑定
       this.addEvent();
@@ -191,20 +393,21 @@ define(['jquery','mCustomScrollbar','peaks','segmentPart'], function ($, mCustom
             var _item  = subtitle.subtitleItems[i],
                 j = 0,
                 _iLen = _item.data.length;
-            var _newItem = {},
-                _newseg = {};
-            _newItem.startTime = _item.startTime ;
-            _newItem.endTime = _item.endTime ;
+           
+            var _newseg = {};
 
             _newseg.startTime = _item.startTime < 0 ? 0 : _item.startTime / 1000;
             _newseg.endTime = _item.endTime / 1000;
-            //_newseg.id = _item.id;
+            
             _newseg.editable = true;
             _newseg.id = _item.id;
             _newseg.segmentId = _item.id;
-
             _newseg.overview = "Kinetic.Group";
             _newseg.zoom = "Kinetic.Group";
+
+            var _newItem = {};
+            _newItem.startTime = _item.startTime ;
+            _newItem.endTime = _item.endTime ;
             _newItem.subtitleItemId = _item.id;
             _newItem.isDifficult =  3;
             if(_iLen === 0){
@@ -213,7 +416,7 @@ define(['jquery','mCustomScrollbar','peaks','segmentPart'], function ($, mCustom
             }else{
                 for( ; j < _iLen ; j++){
                    if(_item.data[j].language === this.baseLanguage){
-                      _newItem.content = _item.data[j].content;
+                      _newItem.content = _item.data[j].content ? _item.data[j].content : "";
                       _newItem.explanation = _item.data[j].explanation;
                       _newItem.language =  _item.data[j].language;
                       _newItem.updateTime = _item.data[j].updateTime;
@@ -274,7 +477,7 @@ define(['jquery','mCustomScrollbar','peaks','segmentPart'], function ($, mCustom
    * 初始化时间轴
    * @return {[type]} [description]
    */
-  subtitleAxis.initSegments = function(){
+  subtitleAxis.segmentPart = function(){
     var segments = this.subtitles.segments, i = 0, _len = segments.length;
     for(; i < _len ; i++){
         if(i % 2 === 0){
@@ -284,9 +487,9 @@ define(['jquery','mCustomScrollbar','peaks','segmentPart'], function ($, mCustom
         }
     }
     // TODO 再看是否有必要留着
-    window.globalSegments = {};
+   // window.globalSegments = {};
     // 储存根据starttime排序的片段，数值为{id: '', startime: ''}
-    window.orderedSegments = [];
+   // window.orderedSegments = [];
     var options = {
       container: document.getElementById('peaks-container'),
       mediaElement: document.querySelector('video'),
@@ -322,12 +525,14 @@ define(['jquery','mCustomScrollbar','peaks','segmentPart'], function ($, mCustom
       /**
        * Colour for the out marker of segments
        */
-      segments : this.subtitles.segments,
       //每一个时间抽的颜色非随机
       randomizeSegmentColor : false,
       overviewHighlightRectangleColor : "red"
     };
-    this.peaksInstance = Peaks.init(options);
+    if(this.subtitles.segments.length > 0){
+      options.segments =  this.subtitles.segments;
+    }
+    /*this.peaksInstance = Peaks.init(options);
     this.peaksInstance.zoom.zoomOut();
      var _self = subtitleAxis;
     this.peaksInstance.on('segments.dragend', function (segment) {
@@ -338,11 +543,12 @@ define(['jquery','mCustomScrollbar','peaks','segmentPart'], function ($, mCustom
     });
     this.peaksInstance.on('dbclickAddSegment', function () {
         segmentPart.addSegment(_self.peaksInstance);
-    });
+    });*/
       /**************使用segments和peakURLs 初始化时间轴**************/
       //初始化时间轴
+      segmentPart.init(options);
   };
-
+  
 
   /**********************************************************************
    *   DOM 操作部分
@@ -608,7 +814,7 @@ define(['jquery','mCustomScrollbar','peaks','segmentPart'], function ($, mCustom
                       _self.pauseVideo();
                       break;
                   default:
-                     //
+                     //f
                }
             }
         });
@@ -702,7 +908,7 @@ define(['jquery','mCustomScrollbar','peaks','segmentPart'], function ($, mCustom
    */
   subtitleAxis.deleteSubtitleById = function(segmentId,_index){
       //移除时间轴上的数据
-      segmentPart.deleteSegment(this.peaksInstance,_index);
+      segmentPart.deleteSegment(_index);
 
       //移除字幕条
       this.removeSubtitle(_index);
@@ -727,7 +933,7 @@ define(['jquery','mCustomScrollbar','peaks','segmentPart'], function ($, mCustom
   };
   
   subtitleAxis.deleteSubtitleByCurrentTime = function(){
-      var index = this.findCurrentIndexByCurrentTime(this.peaksInstance.time.getCurrentTime());
+      var index = this.findCurrentIndexByCurrentTime(segmentPart.time());
      
       if(index >= 0){
           var segmentId = this.subtitles.segments[index].segmentId;
@@ -736,7 +942,7 @@ define(['jquery','mCustomScrollbar','peaks','segmentPart'], function ($, mCustom
   };
   
   subtitleAxis.addSubtitleAxis = function(){
-      segmentPart.addSegment(this.peaksInstance);
+      segmentPart.addSegment();
   };
   /**
    * 添加一个时间轴对象之后的回调
@@ -745,8 +951,9 @@ define(['jquery','mCustomScrollbar','peaks','segmentPart'], function ($, mCustom
    */
   subtitleAxis.addSubtitle = function(segments) {
       var i = 0 , _len =  this.subtitles.segments.length;
-      var _orderSeg = this.peaksInstance.segments.getSegments();
-      var insertIndex = segments[0].index;
+      //var _orderSeg = this.peaksInstance.segments.getSegments();
+      var insertIndex = segments[0].index,
+          _newSegment =segments[0] ;
 
       /*for(; i < _len; i++){
         if(this.subtitles.segments[i].id != _orderSeg[i].segmentId){
@@ -762,13 +969,13 @@ define(['jquery','mCustomScrollbar','peaks','segmentPart'], function ($, mCustom
       
 
       var _newSeg = {};
-      _newSeg.id = _orderSeg[insertIndex].segmentId;//"b_" + new Date().getTime();
+      _newSeg.id = _newSegment.segmentId;//"b_" + new Date().getTime();
       _newSeg.action  = 1;
-      _newSeg.startTime = (_orderSeg[insertIndex].startTime * 1000).toFixed(0);
-      _newSeg.endTime = (_orderSeg[insertIndex].endTime * 1000).toFixed(0);
+      _newSeg.startTime = (_newSegment.startTime * 1000).toFixed(0);
+      _newSeg.endTime = (_newSegment.endTime * 1000).toFixed(0);
 
       console.log(_newSeg);
-      this.subtitles.segments.splice(insertIndex, 0 ,_orderSeg[insertIndex]);
+      this.subtitles.segments.splice(insertIndex, 0 ,_newSegment);
       
 
       this.newSegments.push(_newSeg);
@@ -784,8 +991,8 @@ define(['jquery','mCustomScrollbar','peaks','segmentPart'], function ($, mCustom
                           language : this.baseLanguage,
                           startTime : _newSeg.startTime ,
                           updateTime : new Date().getTime(),
-                          userName : this.options.userName,
-                          userNickname : this.options.userNickname
+                          userName : this.options.username,
+                          userNickname : this.options.nickname
                         };
       this.subtitles.subtitleItems.splice(insertIndex, 0 ,_newSubtitle);
       
@@ -844,7 +1051,7 @@ define(['jquery','mCustomScrollbar','peaks','segmentPart'], function ($, mCustom
      _newSeg.startTime = _newSubtitle.startTime = (seg.startTime * 1000).toFixed(0);
      _newSeg.endTime = _newSubtitle.endTime = (seg.endTime * 1000).toFixed(0);
 
-     _newSeg.id = this.subtitles.segments[_index].id;
+     _newSeg.id = this.subtitles.segments[_index].segmentId;
 
      //和最近的一条重复且都是action=0编辑，则舍弃上一条，以当前这条为标准
      var _flag = this.findUpdateItem(2,_newSeg);
@@ -916,7 +1123,7 @@ define(['jquery','mCustomScrollbar','peaks','segmentPart'], function ($, mCustom
        //更新播放器播放时间
        var _item = this.subtitles.subtitleItems[this.curIndex];
        this.changeCurrentTime(_item.startTime/1000, _item.endTime/1000);
-       this.peaksInstance.time.setCurrentTime(_item.startTime/1000);
+       segmentPart.time(_item.startTime/1000);
        this.scrollTo(this.curIndex);
   };
 
@@ -1052,15 +1259,15 @@ define(['jquery','mCustomScrollbar','peaks','segmentPart'], function ($, mCustom
    * @return {[type]}           [description]
    */
   subtitleAxis.changeCurrentTime = function(startTime,endTime){
-      this.peaksInstance.time.setCurrentTime(startTime);
+      segmentPart.time(startTime);
   };
 
   subtitleAxis.playCurrent = function(){
-      var _index = this.findCurrentIndexByCurrentTime(this.peaksInstance.time.getCurrentTime());
+      var _index = this.findCurrentIndexByCurrentTime(segmentPart.time());
       this.curSIndex = _index;
       if(_index >=0 ){
           var _startTime =  this.subtitles.segments[_index].startTime;
-          this.peaksInstance.time.setCurrentTime(_startTime);
+          segmentPart.time(_startTime);
           Control.course.player.play();
           this.changeCurrentIndex(null, _index);
       }
