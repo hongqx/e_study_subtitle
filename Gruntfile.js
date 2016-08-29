@@ -18,7 +18,7 @@ module.exports = function(grunt){
                 }*/
                 files : {
                 	'js/subtitlecontrol.js':['js/localstorage.js','js/videoPlayer.js','js/videoInfo.js','js/init.js'],
-                    'css/yxgstyle.css':['jquery.mCustomScrollbar.min.css','css/style.css']
+                    'css/yxgstyle.css':['css/jquery.mCustomScrollbar.min.css','css/style.css']
                 } 
 		 	}
 		},
