@@ -1,4 +1,5 @@
-define(['jquery','mCustomScrollbar','peaks'], function ($, mCustomScrollbar, Peaks){
+//'jquery','mCustomScrollbar',$, mCustomScrollbar,
+define(['peaks'], function ( Peaks){
   var segmentPart = {};
   window.segmentPart = segmentPart;
   segmentPart.init = function(options,events){
@@ -17,15 +18,25 @@ define(['jquery','mCustomScrollbar','peaks'], function ($, mCustomScrollbar, Pea
 
       this.peaksInstance.on("segments.ready",function(){
           hideNote();
+          _self.curIndex = 0;
       });
+
+      this.peaksInstance.on("user_seek.zoomview",function(_time){
+         console.log("_currentTime"+_time);
+         _self.userSeek(_time);
+      });
+
+      // this.peaksInstance.on('player_time_update'),function(){
+      //   console.log("_currentTime"+_self.time());
+      // }
   };
   /**
   * 根据当前时间获取时间轴的索引
   * @param  {Object} peaksInstance [description]
   * @return {int}               -1 当前位置没有是时间轴   大于等于0 时间轴的索引位置
   */
-  segmentPart.getIndexByCurrentTime = function(){
-        var _currentTime = this.peaksInstance.time.getCurrentTime(),
+  segmentPart.getIndexByCurrentTime = function(_time){
+        var _currentTime = _time ? _time : this.peaksInstance.time.getCurrentTime(),
             segments = this.peaksInstance.segments.getSegments(), i = 0,_len = segments.length;
         if(_len === 0 || _currentTime > segments[_len-1].endTime){
            return -1;
@@ -34,13 +45,24 @@ define(['jquery','mCustomScrollbar','peaks'], function ($, mCustomScrollbar, Pea
           if(_currentTime >= segments[i].startTime && _currentTime <= segments[i].endTime){
              return i;
           }else if((i+1) < _len && _currentTime > segments[i].endTime && _currentTime < segments[i+1].startTime){
-             return -1
+             return -1;
           }
           i++;
         }
         return -1;
   };
-
+   
+  segmentPart.userSeek = function(_time){
+      var _seg = this.getSegments()[this.curIndex];
+      if(_time >= _seg.startTime && _time <= _seg.endTime){
+         return;
+      }
+      var _index = this.getIndexByCurrentTime(_time);
+      if(_index > -1){
+          this.curIndex = _index;
+          Control.subtitleAxis.changeCurrentIndex(_index, true);
+      }
+  };
   /**
    * 获取当前时间点所在的时间轴对象
    * @param  {object} peaksInstance peak对象
@@ -164,7 +186,7 @@ define(['jquery','mCustomScrollbar','peaks'], function ($, mCustomScrollbar, Pea
         var _segment = _segment ? _segment : this.peaksInstance.segments.getSegments()[_index];
         var _startTime = _segment.startTime;
         var _endTime = _segment.endTime;
-        var ret = this.peaksInstance.segments.removeByTime(_startTime,_endTime); 
+        var ret = this.peaksInstance.segments.removeByTime(_startTime,_endTime);
         if(ret > 0){
            return true;
         }else{
@@ -172,12 +194,13 @@ define(['jquery','mCustomScrollbar','peaks'], function ($, mCustomScrollbar, Pea
         }
   };
 
-  segmentPart.time = function(time){
+  segmentPart.time = function(time,curIndex){
       if(time){
         this.peaksInstance.time.setCurrentTime(time);
+        this.curIndex = curIndex;
       }
       return this.peaksInstance.time.getCurrentTime();
-  }
+  };
 
   /******/
   var subtitleAxis = {};
@@ -310,7 +333,11 @@ define(['jquery','mCustomScrollbar','peaks'], function ($, mCustomScrollbar, Pea
     //this.getServerSubTitles();    //获取服务端数据
     return this;
   };
-
+  
+  /**
+   * 检查时间轴二进制文件是否正常
+   * @return {[type]} [description]
+   */
   subtitleAxis.checkIfDatData = function(){
       var url = 'http://alicdnsub.yxgapp.com/waveMap/'+this.options.videoId+'.dat';
       var _self = this;
@@ -527,8 +554,8 @@ define(['jquery','mCustomScrollbar','peaks'], function ($, mCustomScrollbar, Pea
            
             var _newseg = {};
 
-            _newseg.startTime = _item.startTime < 0 ? 0 : _item.startTime / 1000;
-            _newseg.endTime = _item.endTime / 1000;
+            _newseg.startTime = _item.startTime < 0 ? 0 : parseInt(_item.startTime) / 1000;
+            _newseg.endTime = parseInt(_item.endTime) / 1000;
             
             _newseg.editable = true;
             _newseg.id = _item.id;
@@ -537,8 +564,8 @@ define(['jquery','mCustomScrollbar','peaks'], function ($, mCustomScrollbar, Pea
             _newseg.zoom = "Kinetic.Group";
 
             var _newItem = {};
-            _newItem.startTime = _item.startTime ;
-            _newItem.endTime = _item.endTime ;
+            _newItem.startTime = parseInt( _item.startTime );
+            _newItem.endTime = parseInt( _item.endTime ) ;
             _newItem.id = _item.id;
             _newItem.subtitleItemId = _item.id;
             _newItem.isDifficult =  3;
@@ -550,12 +577,12 @@ define(['jquery','mCustomScrollbar','peaks'], function ($, mCustomScrollbar, Pea
                    if(_item.data[j].language === this.baseLanguage){
                       _newItem.content = _item.data[j].content ? _item.data[j].content : "";
                       _newItem.explanation = _item.data[j].explanation;
-                      _newItem.language =  _item.data[j].language;
+                      //_newItem.language =  _item.data[j].language;
                       _newItem.updateTime = _item.data[j].updateTime;
                       _newItem.username  =  _item.data[j].username;
                       _newItem.userNickname = _item.data[j].userNickname;
-                      _newItem.language = this.language;
-                      _newItem.subtitleItemId = _item.id; 
+                      _newItem.language = this.baseLanguage;
+                      _newItem.subtitleItemId = _item.id;
                       continue;
 
                    }
@@ -1086,7 +1113,7 @@ define(['jquery','mCustomScrollbar','peaks'], function ($, mCustomScrollbar, Pea
       var dom = $("#js_delete");
       var subtitleItem = this.subtitles.subtitleItems[_index];
       var _typeStr = type == 1 ? "时间轴" : "字幕";
-      dom.find(".layui-layer-content").html("确定要删除开始时间为："+this.getTimeModel(Math.ceil(subtitleItem.startTime))+"的"+_typeStr+"?");
+      dom.find(".layui-layer-content").html("确定要删除开始时间为："+this.getTimeModel(Math.ceil(subtitleItem.startTime / 1000))+"的"+_typeStr+"?");
       dom.show();
       dom.attr("data-index",_index);
       dom.attr("data-id",id);
@@ -1308,6 +1335,9 @@ define(['jquery','mCustomScrollbar','peaks'], function ($, mCustomScrollbar, Pea
    * @return {[type]} [description]
    */
   subtitleAxis.changeCurrentIndex = function(_index, ifClick){
+       if(_index === this.curIndex){
+          return;
+       }
        if(_index < 0 || _index >= this.subtitles.subtitleItems.length){
           console.log($(this.lis[this.curIndex]).find(".sub-content")[0]);
           $($(this.lis[this.curIndex]).find(".sub-content")[0]).click();
@@ -1331,7 +1361,7 @@ define(['jquery','mCustomScrollbar','peaks'], function ($, mCustomScrollbar, Pea
        //更新播放器播放时间
        var _item = this.subtitles.subtitleItems[this.curIndex];
        this.changeCurrentTime(_item.startTime/1000, _item.endTime/1000);
-       segmentPart.time(_item.startTime/1000);
+       segmentPart.time(_item.startTime/1000, this.curIndex);
        this.scrollTo(this.curIndex);
   };
 
@@ -1475,7 +1505,7 @@ define(['jquery','mCustomScrollbar','peaks'], function ($, mCustomScrollbar, Pea
       this.curSIndex = _index;
       if(_index >=0 ){
           var _startTime =  this.segments[_index].startTime;
-          segmentPart.time(_startTime);
+          segmentPart.time(_startTime, this.curIndex);
           Control.course.player.play();
           this.changeCurrentIndex(_index);
       }

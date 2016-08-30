@@ -1,5 +1,5 @@
 var Control ;
-require([ "subtitleAxis"], function( subtitleAxis) {
+require([ "subtitleAxis"], function(subtitleAxis) {
    function initVideoInfo(){
      Control = {
 
@@ -25,7 +25,6 @@ require([ "subtitleAxis"], function( subtitleAxis) {
          language : _userInfo.language,
          errorCallBack : Control.course.showErrorNote
      };
-     require
      Control.subtitleAxis = subtitleAxis.init(segSubtitlsoptions,"subTitleDom");
      return Control;
    }
