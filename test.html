@@ -37,7 +37,10 @@
       #second-waveform-visualiser-container [class*="-container"] {
         background: #111;
       }
-    </style>
+    </style> 
+    <script type="text/javascript" src="http://m.yxgapp.com/d/threeParty/jquery1_11_3.min.js"></script>
+    <script type="text/javascript" src="http://m.yxgapp.com/d/threeParty/jquery.mCustomScrollbar.concat.min.js"></script>
+
 </head>
 
 <body>
@@ -107,6 +110,7 @@
            <div class="right-top" id="peaks-container">  
            </div>
            <div class="tranlist" id="subTitleDom">
+               <div class="sublistnote" style="display:none;">该视频还没有时间轴字幕哟，赶快去添加吧！！</div>
                <ul class="sublist" >
                   <!--  <li data-pindex="29" data-index="29">
                       <div class="subtitle">
@@ -196,8 +200,6 @@
             <a class="layui-layer-btn0"  id="js_cancel"  target="_self" style="right: 10px;">取消</a>
         </div>
     </div>
-    <script type="text/javascript" src="http://m.yxgapp.com/d/threeParty/jquery1_11_3.min.js"></script>
-    <script type="text/javascript" src="http://m.yxgapp.com/d/threeParty/jquery.mCustomScrollbar.concat.min.js"></script>
     <script src="http://m.yxgapp.com/d/threeParty/require.js"></script>
     <script type="text/javascript">
         requirejs.config({
