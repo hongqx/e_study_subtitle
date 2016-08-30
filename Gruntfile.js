@@ -33,8 +33,8 @@ module.exports = function(grunt){
 	   		dist:{
 	   			files: {
                     'build/js/subtitlecontrol.min.js':['js/subtitlecontrol.js'],
-                    'build/js/segmentPart.min.js':['js/segmentPart.js'],
-                    'build/js/subtitleAxis.min.js':['js/subtitleAxis.js'],
+                    /* 'build/js/segmentPart.min.js':['js/segmentPart.js'],*/
+                    'build/js/subtitleAxis.min.js':['js/subtitleAxis.js']
 	   			}
 	   		}
 	   	},
