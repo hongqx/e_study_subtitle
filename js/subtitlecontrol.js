@@ -1,6 +1,6 @@
 /*!estudysubtitle
  *version 1.1.0
- *2016-08-01  05:17:04
+ *2016-08-30  05:40:01
  *完善提交逻辑，时间轴线和字幕列表联动
  */
 var LocalStorage = {
@@ -400,6 +400,7 @@ function Course(){
 Course.init = function(options,data){
     var _instance = new Course();
     _instance.options = options;
+    _instance.showLoadNote("页面初始化中。。。");
     _instance.data =  data;
     _instance.videoData = null;
     _instance.courseData = null;
@@ -426,7 +427,7 @@ Course.prototype = {
 
 	showErrorNote : function(msg){
         this.hideLoadNote();
-        msg = msg ? msg : "登陆状态失效，请重新扫描二维码进行登录";
+        msg = msg ? msg : "登录状态失效或者参数缺失，请用App重新扫描二维码进行登录";
         var _loginurl = "http://t.yxgapp.com/index.html";//上线的时候需要改动
         $("#js_mask").show();
         var btn = $("#js_note .layui-layer-btn0");
@@ -584,7 +585,7 @@ Course.prototype = {
 
 };/*--------*/
 var Control ;
-require(["jquery","subtitleAxis"], function($, subtitleAxis) {
+require([ "subtitleAxis"], function( subtitleAxis) {
    function initVideoInfo(){
      Control = {
 
@@ -598,7 +599,10 @@ require(["jquery","subtitleAxis"], function($, subtitleAxis) {
      };
      Control.course = Course.init(options);
      Control.userInfo = _userInfo;
-
+     if( !Control.userInfo.token || !Control.userInfo.username || !Control.userInfo.videoId){
+          Control.course.showErrorNote('登录状态失效或者参数缺失，请用App重新扫描二维码进行登录');
+          return;
+     }
      var segSubtitlsoptions = {
          videoId : _userInfo.videoId,//'ad1773cf-da42-4b69-ab9c-66994a8db66c',
          token : _userInfo.token,
@@ -607,7 +611,7 @@ require(["jquery","subtitleAxis"], function($, subtitleAxis) {
          language : _userInfo.language,
          errorCallBack : Control.course.showErrorNote
      };
-     
+     require
      Control.subtitleAxis = subtitleAxis.init(segSubtitlsoptions,"subTitleDom");
      return Control;
    }

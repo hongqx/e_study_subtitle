@@ -42,6 +42,7 @@ function Course(){
 Course.init = function(options,data){
     var _instance = new Course();
     _instance.options = options;
+    _instance.showLoadNote("页面初始化中。。。");
     _instance.data =  data;
     _instance.videoData = null;
     _instance.courseData = null;
@@ -68,7 +69,7 @@ Course.prototype = {
 
 	showErrorNote : function(msg){
         this.hideLoadNote();
-        msg = msg ? msg : "登陆状态失效，请重新扫描二维码进行登录";
+        msg = msg ? msg : "登录状态失效或者参数缺失，请用App重新扫描二维码进行登录";
         var _loginurl = "http://t.yxgapp.com/index.html";//上线的时候需要改动
         $("#js_mask").show();
         var btn = $("#js_note .layui-layer-btn0");
