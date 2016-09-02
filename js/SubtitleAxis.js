@@ -5,8 +5,8 @@ define(['peaks'], function ( Peaks){
   segmentPart.init = function(options,events){
 
       this.peaksInstance = Peaks.init(options);
+      this.segsNun = options.segments.length;
       this.peaksInstance.zoom.zoomOut();
-
       var _self = segmentPart;
       this.peaksInstance.on('segments.dragend', function (segment) {
           _self.updateSegment(segment);
@@ -18,17 +18,26 @@ define(['peaks'], function ( Peaks){
 
       this.peaksInstance.on("segments.ready",function(){
           hideNote();
-          _self.curIndex = 0;
+          //_self.segments = _self.getSegments();
+          if(_self.segsNun > 0){
+              //当前时间默认设置为第一个时间轴的开始时间
+              //_self.time(_self.segments[0].startTime);
+              _self.curIndex = 0;//当前的index
+              _self.ifBlank = true;//当前时间轴是否空白
+          }else{
+              _self.curIndex = -1;//当前的index
+              _self.ifBlank = false;//当前时间轴是否空白
+          }
       });
 
       this.peaksInstance.on("user_seek.zoomview",function(_time){
          console.log("_currentTime"+_time);
          _self.userSeek(_time);
       });
-
-      // this.peaksInstance.on('player_time_update'),function(){
-      //   console.log("_currentTime"+_self.time());
-      // }
+      this.peaksInstance.on('player_time_update',function(_time){
+          //console.log("player_time_update"+_time);
+          _self.timeUpdate(_time);
+      });
   };
   /**
   * 根据当前时间获取时间轴的索引
@@ -51,17 +60,60 @@ define(['peaks'], function ( Peaks){
         }
         return -1;
   };
-   
+  
+  /**
+   * 用户手动seek,即点击时间轴的时候触发
+   * @param  {[type]} _time [description]
+   * @return {[type]}       [description]
+   */
   segmentPart.userSeek = function(_time){
-      var _seg = this.getSegments()[this.curIndex];
+      var _seg = this.segments[this.curIndex];
       if(_time >= _seg.startTime && _time <= _seg.endTime){
          return;
       }
+      //获取最新的当前时间所在的索引
       var _index = this.getIndexByCurrentTime(_time);
+      //this.index  = _index;
       if(_index > -1){
           this.curIndex = _index;
+          this.ifBlank = false;
           Control.subtitleAxis.changeCurrentIndex(_index, true);
+      }else{
+          this.ifBlank = true;
       }
+  };
+
+  segmentPart.timeUpdate = function(_time){
+    if(!this.segments){
+      console.log("this.segments");
+      this.segments =  this.getSegments();
+      this.time(this.segments[0].startTime)
+      return;
+    }
+    if(this.endTime > 0 && _time >= this.endTime){
+        this.peaksInstance.player.pause();
+        this.startTime = -1;
+        this.endTime = -1;
+        //return;
+    }
+    var _curSeg = this.segments[this.curIndex];
+    if(_time >= _curSeg.startTime && _time <= _curSeg.endTime){
+        this.ifBlank = false;
+        //return;
+    }else{
+        var _nextSeg;
+        if((this.curIndex + 1) < this.segments.length){
+           _nextSeg = this.segments[this.curIndex + 1];
+        }
+        if(_nextSeg &&  _time >= _nextSeg.startTime && _time <= _newseg.endTime){
+            this.curIndex = this.curIndex++;
+            this.ifBlank = false;
+            Control.subtitleAxis.changeCurrentIndex(_index, true);
+        }else {
+            this.ifBlank = true;
+        }
+    }
+    console.log("this.ifBlank "+this.ifBlank+"  "+this.curIndex );
   };
   /**
    * 获取当前时间点所在的时间轴对象
@@ -146,9 +198,9 @@ define(['peaks'], function ( Peaks){
   segmentPart.addSegment = function(segment,segmentId){
         var segment = this.getSegmentIndex();
         if(segment === 0){
-            showNote("当期位置时间空隙不够，无法添加，请删除相邻时间轴之后再添加",true);
+            showNote("当期位置时间空隙不够，无法添加，请删除相邻时间轴之后再添加!",true);
         }else if(segment === 1){
-            showNote("当期位置已有时间轴，无法添加",true);
+            showNote("当期位置已有时间轴，无法添加!",true);
             return ;
         }else{
             segment.editable = true;
@@ -159,7 +211,12 @@ define(['peaks'], function ( Peaks){
             }
             segment.segmentId = segmentId ? segmentId : 'b_'+ new Date().getTime();
             var segment = this.peaksInstance.segments.add([segment]);
-            Control.subtitleAxis.addSubtitle(segment);
+            if(segment && segment.length > 0){
+                this.segments = this.peaksInstance.segments.getSegments();
+                Control.subtitleAxis.addSubtitle(segment);
+            }else{
+                showNote("时间轴添加失败，请重试!!",true);
+            }
         }
   };
   
@@ -188,8 +245,10 @@ define(['peaks'], function ( Peaks){
         var _endTime = _segment.endTime;
         var ret = this.peaksInstance.segments.removeByTime(_startTime,_endTime);
         if(ret > 0){
+           this.segments = this.peaksInstance.segments.getSegments();
            return true;
         }else{
+           showNote("删除时间轴失败，请重试！",true);
            return false;
         }
   };
@@ -201,6 +260,11 @@ define(['peaks'], function ( Peaks){
       }
       return this.peaksInstance.time.getCurrentTime();
   };
+  segmentPart.setPlayTime = function(_startTime,_endTime){
+      this.startTime = _startTime;
+      this.endTime = _endTime;
+      this.video.currentTime = _startTime;
+  }
 
   /******/
   var subtitleAxis = {};
@@ -1501,13 +1565,18 @@ define(['peaks'], function ( Peaks){
   };
 
   subtitleAxis.playCurrent = function(){
-      var _index = this.findCurrentIndexByCurrentTime(segmentPart.time());
-      this.curSIndex = _index;
+      var _index = this.segmentPart.index;//this.findCurrentIndexByCurrentTime(segmentPart.time());
+      //this.curIndex = _index;
       if(_index >=0 ){
-          var _startTime =  this.segments[_index].startTime;
+          var _startTime =  this.segments[_index].startTime,
+              _endTime = this.segments[_index].endTime;
           segmentPart.time(_startTime, this.curIndex);
+          Control.course.changePlayerTime(_startTime, _endTime); 
           Control.course.player.play();
           this.changeCurrentIndex(_index);
+      }else{
+          Control.course.changePlayerTime(-1, -1); //去除开始时间和结束时间的限制
+          Control.course.player.play();
       }
   }
 

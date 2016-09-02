@@ -1,6 +1,6 @@
 /*!estudysubtitle
  *version 1.1.0
- *2016-08-30  11:24:35
+ *2016-09-02  06:30:18
  *完善提交逻辑，时间轴线和字幕列表联动
  */
 var LocalStorage = {
@@ -110,7 +110,6 @@ function videoPlayer(containerId){
         onDataOk : null,
         onEnd : null,
         onUpdate : null
-
     }
 }
 /**
@@ -291,11 +290,13 @@ videoPlayer.prototype = {
     onTimeUpdate : function(){
        this.hideLoading();
        this.currentTime = this.video.currentTime;
-       if(this.endTime && this.endTime > 0 && this.currentTime >= this.endTime){
-           this.pause();
-           this.endTime = -1;
-           //this.video.currentTime  = this.startTime;
-       }
+       // if(this.endTime && this.endTime > 0 && this.video.currentTime >= this.endTime){
+       //     console.log(this.video.currentTime+"  this.endTime:"+this.endTime);
+       //     this.pause();
+       //     //this.video.currentTime  = this.startTime;
+       //     this.endTime = -1;
+       //     this.startTime = -1;
+       // }
        this.options.onUpdate ? this.options.onUpdate(this.video.currentTime) : "";
     },
     onError : function(){
@@ -310,10 +311,10 @@ videoPlayer.prototype = {
     play : function(){
        if(!this.startPlay){
          //this.hideControl();
-         if(this.startTime > 0){
-           this.video.currentTime = this.startTime;
-           //this.startTime = 0;
-         }
+         // if(this.startTime > 0){
+         //   this.video.currentTime = this.startTime;
+         //   //this.startTime = 0;
+         // }
          this.video.play();
        }else{
          if(this.video.paused){
@@ -349,11 +350,19 @@ videoPlayer.prototype = {
          //$(this.video).on("canPlay")
          //this.startTime = _startTime;
          //this.endTime = _endTime;
-         this.video.currentTime = _startTime;
-         var _self = this;
-         $(this.video).on("canPlay",function(){
-              this.currentTime = _startTime;
-         });
+         // this.video.currentTime = _startTime;
+         // var _self = this;
+         // $(this.video).on("canPlay",function(){
+         //      this.currentTime = _startTime;
+         // });
+        this.startTime = this.video.currentTime = _startTime;
+        this.endTime = _endTime;
+        var _self = this;
+        $(this.video).on("canPlay",function(){
+             this.video.currentTime = _startTime;
+             this.video.play();
+        });    
+         
     }
 };/*--------*/
 /**
