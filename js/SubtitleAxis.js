@@ -37,6 +37,9 @@ define(['peaks'], function ( Peaks){
           //console.log("player_time_update"+_time);
           _self.timeUpdate(_time);
       });
+      this.peaksInstance.on("segments.ready" ,function(){
+         _self.segments = _self.getSegments();
+      });
   };
   /**
   * 根据当前时间获取时间轴的索引
@@ -66,6 +69,9 @@ define(['peaks'], function ( Peaks){
    * @return {[type]}       [description]
    */
   segmentPart.userSeek = function(_time){
+     if(this.segments.length < 1){
+       return;
+     }
       var _seg = this.segments[this.curIndex];
       if(_time >= _seg.startTime && _time <= _seg.endTime){
          return;
@@ -83,11 +89,14 @@ define(['peaks'], function ( Peaks){
   };
 
   segmentPart.timeUpdate = function(_time){
+    if(this.segments.length < 1){
+       return;
+    }
     if(!this.segments){
       console.log("this.segments");
       this.segments =  this.getSegments();
-      this.time(this.segments[0].startTime);
       this.curIndex = 0;
+      this.time(this.segments[0].startTime);
       return;
     }
     //如果有startTime和endTime 则播放该段时间内的视频
@@ -789,6 +798,8 @@ define(['peaks'], function ( Peaks){
     };
     if(this.segments.length > 0){
       options.segments =  this.segments;
+    }else{
+      options.segments = [];
     }
     /*this.peaksInstance = Peaks.init(options);
     this.peaksInstance.zoom.zoomOut();
@@ -1155,7 +1166,7 @@ define(['peaks'], function ( Peaks){
             //this.updateLoacal(2);
 
             //this.saveSubtitle(_basesubtitle,_index);
-            this.updateLoacal();
+            this.updateLoacal(1);
             this.updateWps(target.parent(), _index);
         }
   };
@@ -1385,7 +1396,7 @@ define(['peaks'], function ( Peaks){
      var _wps = (this.getWordsNum(_content)/ _duration).toFixed(1)+"WPS";
      _li.find(".js_wps").html(_wps);
 
-     this.updateLoacal();
+     this.updateLoacal(1);
   };
   
   subtitleAxis.findUpdateItem = function(type, obj){
