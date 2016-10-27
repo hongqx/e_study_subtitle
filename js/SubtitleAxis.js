@@ -3,19 +3,29 @@ define(['peaks'], function ( Peaks){
   var segmentPart = {};
   window.segmentPart = segmentPart;
   segmentPart.init = function(options,events){
+      this.segments = [];
 
       this.peaksInstance = Peaks.init(options);
       this.segsNum = options.segments.length;
       this.peaksInstance.zoom.zoomOut();
       var _self = segmentPart;
+
+      //时间轴拖拽结束开始更新当前的时间轴数据
       this.peaksInstance.on('segments.dragend', function (segment) {
           _self.updateSegment(segment);
       });
 
+      //开始调整时间轴的时候，暂停视频播放
+      this.peaksInstance.on('segments.dragstart', function (segment) {
+          _self.dragStartCallBack(segment);
+      });
+
+      //绑定双击时间轴在空白处添加轴的事件 现去除，添加轴只通过快捷键
       this.peaksInstance.on('dbclickAddSegment', function () {
           _self.addSegment();
       });
-
+      
+      //绑定时间轴绘制完成之后的一些初始化事件 隐藏提示层，设置时间轴的开始时间  标识当前时间轴是否是空白
       this.peaksInstance.on("segments.ready",function(){
           hideNote();
           //_self.segments = _self.getSegments();
@@ -28,18 +38,22 @@ define(['peaks'], function ( Peaks){
               _self.curIndex = -1;//当前的index
               _self.ifBlank = false;//当前时间轴是否空白
           }
+          _self.segments = _self.getSegments()||[];
       });
-
+      
+      //绑定用户手动触发时间轴时间变化以便更新之后的时间轴
       this.peaksInstance.on("user_seek.zoomview",function(_time){
          _self.userSeek(_time);
       });
+
+      //绑定播放时间更新的时候的回调
       this.peaksInstance.on('player_time_update',function(_time){
           //console.log("player_time_update"+_time);
           _self.timeUpdate(_time);
       });
-      this.peaksInstance.on("segments.ready" ,function(){
-         _self.segments = _self.getSegments();
-      });
+      // this.peaksInstance.on("segments.ready" ,function(){
+      //    _self.segments = _self.getSegments();
+      // });
   };
   /**
   * 根据当前时间获取时间轴的索引
@@ -101,6 +115,7 @@ define(['peaks'], function ( Peaks){
     }
     //如果有startTime和endTime 则播放该段时间内的视频
     if(this.endTime > 0 && _time >= this.endTime && !this.ifBlank){
+        console.log("当前的时间+"+_time+"  this.endTime:"+this.endTime);
         this.peaksInstance.player.pause();
         this.time(this.startTime);
         this.startTime = -1;
@@ -285,7 +300,10 @@ define(['peaks'], function ( Peaks){
       //this.video.currentTime = _startTime;
       segmentPart.peaksInstance.player.play();
   }
-
+  
+  segmentPart.dragStartCallBack = function(segment){
+      subtitleAxis.pauseVideo();
+  }
   /******/
   var subtitleAxis = {};
   window.subtitleAxis = subtitleAxis;
@@ -1081,7 +1099,8 @@ define(['peaks'], function ( Peaks){
         var _self = this;
         document.addEventListener('keydown',function(event){
             var e = event || window.event || arguments.callee.caller.arguments[0];
-            if(e.shiftKey && e.keyCode == 9 ){
+            console.log(e.keyCode);
+            if(e && e.shiftKey && e.keyCode == 9 ){
                 _self.tabClick(event,false);
             }else if(e && e.keyCode == 9){ // 按 Tab 
                 _self.tabClick(event,true);
