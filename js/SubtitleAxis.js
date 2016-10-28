@@ -21,10 +21,12 @@ define(['peaks'], function ( Peaks){
       });
 
       //绑定双击时间轴在空白处添加轴的事件 现去除，添加轴只通过快捷键
-      this.peaksInstance.on('dbclickAddSegment', function () {
+      /*this.peaksInstance.on('dbclickAddSegment', function () {
           _self.addSegment();
-      });
-      
+      });*/
+      this.peaksInstance.on("segment.click",function(segment){
+        console.log("segment is clicked");
+      })
       //绑定时间轴绘制完成之后的一些初始化事件 隐藏提示层，设置时间轴的开始时间  标识当前时间轴是否是空白
       this.peaksInstance.on("segments.ready",function(){
           hideNote();
