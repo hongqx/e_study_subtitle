@@ -296,16 +296,27 @@ define(['peaks'], function ( Peaks){
       }
       return this.peaksInstance.time.getCurrentTime();
   };
+
+  /**
+   * 设置开始播放和结束播放的时间点，并且开始播放
+   * @param {[type]} _startTime 开始播放的时间
+   * @param {[type]} _endTime   结束播放的时间
+   */
   segmentPart.setPlayTime = function(_startTime,_endTime){
       this.startTime = _startTime;
       this.endTime = _endTime;
       //this.video.currentTime = _startTime;
       segmentPart.peaksInstance.player.play();
-  }
+  };
   
+  /**
+   * 把手开始拖拽的时候回调
+   * @param  {[type]} segment [description]
+   * @return {[type]}         [description]
+   */
   segmentPart.dragStartCallBack = function(segment){
-      subtitleAxis.pauseVideo();
-  }
+      subtitleAxis.play();
+  };
   /******/
   var subtitleAxis = {};
   window.subtitleAxis = subtitleAxis;
@@ -391,24 +402,24 @@ define(['peaks'], function ( Peaks){
             console.log("getData success | "+_url+" | "+_params);
             if(_successback ){
                if(typeof _successback === "string"){
-                   _self[_successback](data)
+                   _self[_successback](data);
                }else if(typeof _successback === 'function'){
                    _successback(data);
                }
             }else{
-               console.log(data)
+               console.log(data);
             }
         },
         error : function(data){
             console.error("getData error | "+_url+" | "+_params);
             if(_errorcallback ){
                if(typeof _errorcallback === "string"){
-                   _self[_errorcallback](data)
+                   _self[_errorcallback](data);
                }else if(typeof _errorcallback === 'function'){
                    _errorcallback(data);
                }
             }else{
-              console.log(data)
+              console.log(data);
             }
         }
       });
@@ -554,7 +565,7 @@ define(['peaks'], function ( Peaks){
       this.addKeyDownEvent();
       //启动提交检查机制
       this.startPostInterval();
-  }
+  };
 
   /**
    * 获取字幕静态化状态
@@ -603,7 +614,7 @@ define(['peaks'], function ( Peaks){
   subtitleAxis.staticStateError = function(){
       this.staticState = true;
       this.getServerSubTitles();
-  }
+  };
   /**
    * 对获取到的数据进行时间排序
    * @return {} [description]
@@ -619,7 +630,7 @@ define(['peaks'], function ( Peaks){
           return k;
       }
       var i = 0, len = subtitleItems.length;
-      for(i; i<len; i++){ 
+      for(i; i<len; i++){
           var min = selectmin(subtitleItems, len, i);
           if(min !== i){
              console.log("min:"+min+"  i"+i);
@@ -628,7 +639,7 @@ define(['peaks'], function ( Peaks){
              subtitleItems[min] = temp;
           }
       }
-      return subtitleItems; 
+      return subtitleItems;
   };
 
   /**
@@ -724,8 +735,8 @@ define(['peaks'], function ( Peaks){
           }
       //否则将本地存储和传入的subtitle合并，并生成新的segments
       }else{
-          var _nLen = subtitles.subtitleItems.length;
-          var _len = this.localSubtitles.subtitleItems.length,
+          var _nLen = subtitles.subtitleItems.length,
+              _len = this.localSubtitles.subtitleItems.length,
               _segments = [];
           for( ;i < _len ;i++){
 
@@ -802,10 +813,10 @@ define(['peaks'], function ( Peaks){
       // 覆盖在总体波形图上面的矩形宽度
       zoomLevels: [512, 1024, 2048, 4096],
       pointMarkerColor:     '#FF0000', //Color for the point marker
-      inMarkerColor: '#234c5a',
+      inMarkerColor: '#717475',
 
       // Colour for the out marker of segments
-      outMarkerColor: '#234c5a',
+      outMarkerColor: '#717475',
       /**
        * Colour for the in marker of segments
        */
@@ -1102,10 +1113,14 @@ define(['peaks'], function ( Peaks){
         document.addEventListener('keydown',function(event){
             var e = event || window.event || arguments.callee.caller.arguments[0];
             console.log(e.keyCode);
+            if(e && e.keyCode === 32){
+                _self.play();
+                return;
+            }
             if(e && e.shiftKey && e.keyCode == 9 ){
-                _self.tabClick(event,false);
+                //_self.tabClick(event,false);
             }else if(e && e.keyCode == 9){ // 按 Tab 
-                _self.tabClick(event,true);
+                //_self.tabClick(event,true);
             }else if(e.ctrlKey){
                var keycode =  e.keyCode ;
                switch(keycode){
@@ -1119,7 +1134,7 @@ define(['peaks'], function ( Peaks){
                       _self.deleteSubtitleByCurrentTime();
                       break;
                   case 83:
-                      _self.pauseVideo();
+                      _self.play();
                       break;
                   default:
                       return false;
@@ -1620,7 +1635,11 @@ define(['peaks'], function ( Peaks){
   subtitleAxis.changeCurrentTime = function(startTime,endTime){
       segmentPart.time(startTime);
   };
-
+ 
+ /**
+  * 播放当前时间点内的视频
+  * @return {[type]} [description]
+  */
   subtitleAxis.playCurrent = function(){
       var _index = this.curIndex;//this.findCurrentIndexByCurrentTime(segmentPart.time());
       //this.curIndex = _index;
@@ -1639,8 +1658,8 @@ define(['peaks'], function ( Peaks){
       }
   }
 
-  subtitleAxis.pauseVideo = function(){
-      Control.course.player.pause();
+  subtitleAxis.play = function(){
+      Control.course.player.play();
   }
   return subtitleAxis;
 });
