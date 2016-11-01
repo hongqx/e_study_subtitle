@@ -1,6 +1,6 @@
 /*!estudysubtitle
  *version 1.1.0
- *2016-09-18  06:46:50
+ *2016-10-31  02:16:48
  *完善提交逻辑，时间轴线和字幕列表联动
  */
 var LocalStorage = {
@@ -519,8 +519,8 @@ Course.prototype = {
 			onPause:null,
 			onDataok : function(data){
 			},
-			onUpdate:function(time){
-			}
+			onUpdate:function(_time){
+     }
 		};
 		this.player =  videoPlayer.init("video_container",playerOption,this.videoData);
     },
@@ -621,6 +621,7 @@ require([ "subtitleAxis"], function(subtitleAxis) {
          errorCallBack : Control.course.showErrorNote
      };
      Control.subtitleAxis = subtitleAxis.init(segSubtitlsoptions,"subTitleDom");
+     
      return Control;
    }
 

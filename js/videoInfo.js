@@ -152,8 +152,8 @@ Course.prototype = {
 			onPause:null,
 			onDataok : function(data){
 			},
-			onUpdate:function(time){
-			}
+			onUpdate:function(_time){
+     }
 		};
 		this.player =  videoPlayer.init("video_container",playerOption,this.videoData);
     },

@@ -25,8 +25,10 @@ define(['peaks'], function ( Peaks){
           _self.addSegment();
       });*/
       this.peaksInstance.on("segment.click",function(segment){
-        console.log("segment is clicked");
-      })
+        //var _mid = (segment.endTime - segment.startTime )/2;
+        console.log("segment is clicked "+segment.index);
+        _self.changeSegment(segment);
+      });
       //绑定时间轴绘制完成之后的一些初始化事件 隐藏提示层，设置时间轴的开始时间  标识当前时间轴是否是空白
       this.peaksInstance.on("segments.ready",function(){
           hideNote();
@@ -85,31 +87,39 @@ define(['peaks'], function ( Peaks){
    * @return {[type]}       [description]
    */
   segmentPart.userSeek = function(_time){
-     if(this.segments.length < 1){
+      console.log("segmentPart.userSeek");
+      if(this.segments.length < 1){
        return;
-     }
+      }
       var _seg = this.segments[this.curIndex];
+      console.log("segmentPart.userSeek:没有跳转时间轴 _time:"+_time+"  "+_seg.startTime +" "+_seg.endTime);
       if(_time >= _seg.startTime && _time <= _seg.endTime){
+         //Control.subtitleAxis.changeCurrentIndex(this.curIndex, true);
          return;
       }
       //获取最新的当前时间所在的索引
       var _index = this.getIndexByCurrentTime(_time);
+      console.log("segmentPart.userSeek:this time index is "+_index);
       //this.index  = _index;
       if(_index > -1){
           this.curIndex = _index;
           this.ifBlank = false;
-          Control.subtitleAxis.changeCurrentIndex(_index, true);
+          //Control.subtitleAxis.changeCurrentIndex(_index, true);
       }else{
           this.ifBlank = true;
+          this.startTime = -1;
+          this.endTime = -1;
+          this.peaksInstance.segments.changeCurrentMarker(this.curIndex);
+          Control.subtitleAxis.changeCurrentIndex(-1, true);
       }
   };
 
   segmentPart.timeUpdate = function(_time){
+    //console.log("timeupdate :"+_time);
     if(this.segments.length < 1){
        return;
     }
     if(!this.segments){
-      console.log("this.segments");
       this.segments =  this.getSegments();
       this.curIndex = 0;
       this.time(this.segments[0].startTime);
@@ -117,17 +127,18 @@ define(['peaks'], function ( Peaks){
     }
     //如果有startTime和endTime 则播放该段时间内的视频
     if(this.endTime > 0 && _time >= this.endTime && !this.ifBlank){
-        console.log("当前的时间+"+_time+"  this.endTime:"+this.endTime);
+        console.log("segmentPart.timeUpdate:当前的时间+"+_time+"  this.endTime:"+this.endTime);
         this.peaksInstance.player.pause();
-        this.time(this.startTime);
+        this.time(this.endTime);
         this.startTime = -1;
         this.endTime = -1;
+        clearInterval( this.interval1 );
         return;
     }
     var _curSeg = this.segments[this.curIndex];
     if(_time >= _curSeg.startTime && _time <= _curSeg.endTime){
         this.ifBlank = false;
-        //return;
+        return;
     }else{
         var _nextSeg;
         if((this.curIndex + 1) < this.segments.length){
@@ -136,14 +147,34 @@ define(['peaks'], function ( Peaks){
         if(_nextSeg &&  _time >= _nextSeg.startTime && _time <= _nextSeg.endTime){
             this.curIndex ++;
             this.ifBlank = false;
-            console.log("timeUpdate||curIndex: "+this.curIndex+" ||ifBlank: "+this.ifBlank);
+            console.log("segmentPart.timeUpdate:timeUpdate||curIndex: "+this.curIndex+" ||ifBlank: "+this.ifBlank);
             Control.subtitleAxis.changeCurrentIndex(this.curIndex, true);
         }else {
             this.ifBlank = true;
+            Control.subtitleAxis.changeCurrentIndex(-1, true);
+            this.startTime = -1;
+            this.endTime = -1;
+            //this.peaksInstance.segments.changeCurrentMarker(this.curIndex);
+            //Control.subtitleAxis.changeCurrentIndex(-1, true);
         }
     }
     //console.log("this.ifBlank "+this.ifBlank+"  "+this.curIndex );
   };
+  
+  /**
+   * 点击某一个时间轴的回调方法
+   * @param  {[type]} segment 当前被点击的时间轴对象
+   * @return {[type]}         [description]
+   */
+  segmentPart.changeSegment = function(segment){
+      this.peaksInstance.player.pause();
+      //this.time(segment.startTime + 0.01, segment.index);
+      this.endTime = segment.endTime;
+      this.startTime = segment.startTime;
+      this.curIndex = segment.index;
+      Control.subtitleAxis.changeCurrentIndex(this.curIndex, true);
+      this.ifBlank = false;
+  }
   /**
    * 获取当前时间点所在的时间轴对象
    * @param  {object} peaksInstance peak对象
@@ -223,7 +254,7 @@ define(['peaks'], function ( Peaks){
             return newSegment;
         }
   };
-
+ 
   segmentPart.addSegment = function(segment,segmentId){
         var segment = this.getSegmentIndex();
         if(segment === 0){
@@ -234,9 +265,9 @@ define(['peaks'], function ( Peaks){
         }else{
             segment.editable = true;
             if(segment.index % 2 === 0){
-                segment.color = "#292a2b";
+                segment.color = "#646464";
             }else{
-                segment.color = "#0c204c";
+                segment.color = "#343434";
             }
             segment.segmentId = segmentId ? segmentId : 'b_'+ new Date().getTime();
             var segment = this.peaksInstance.segments.add([segment]);
@@ -257,6 +288,7 @@ define(['peaks'], function ( Peaks){
   };
   segmentPart.updateSegment = function(segment){
       Control.subtitleAxis.updateSubtitle(segment);
+      this.getSegments();
   };
 
   segmentPart.deleteSegment = function (index,segment) {
@@ -305,8 +337,14 @@ define(['peaks'], function ( Peaks){
   segmentPart.setPlayTime = function(_startTime,_endTime){
       this.startTime = _startTime;
       this.endTime = _endTime;
-      //this.video.currentTime = _startTime;
-      segmentPart.peaksInstance.player.play();
+      if(_startTime < 0 && _endTime < 0){
+          return;
+      }
+      this.interval1 = setInterval(function(){
+        var _time = segmentPart.time();
+        //console.log("this.interval1"+segmentPart.interval1+" currentTime:"+_time);
+        segmentPart.timeUpdate(_time);
+      },50);
   };
   
   /**
@@ -315,8 +353,22 @@ define(['peaks'], function ( Peaks){
    * @return {[type]}         [description]
    */
   segmentPart.dragStartCallBack = function(segment){
-      subtitleAxis.play();
+      //开始拖拽 直接暂停播放
+      subtitleAxis.play(true);
   };
+  /**
+   * 修改当前的时间轴获取焦点显示调整把手
+   * @param  {[type]} _index [description]
+   * @return {[type]}        [description]
+   */
+  segmentPart.changeMarker = function(_index){
+      if(_index > -1 && _index < this.segments.length){
+          this.peaksInstance.segments.changeCurrentMarker(this.segments[_index]);
+          this.curIndex = _index;
+      }
+  };
+
+
   /******/
   var subtitleAxis = {};
   window.subtitleAxis = subtitleAxis;
@@ -780,9 +832,9 @@ define(['peaks'], function ( Peaks){
     var  i = 0, _len = this.segments.length;
     for(; i < _len ; i++){
         if(i % 2 === 0){
-            this.segments[i].color = "#292a2b";
+            this.segments[i].color = "#646464";
         }else{
-            this.segments[i].color = "#0c204c";
+            this.segments[i].color = "#343434";
         }
     }
     // TODO 再看是否有必要留着
@@ -799,24 +851,27 @@ define(['peaks'], function ( Peaks){
       keyboard: false,
       height: 150,
       // Colour for the overview waveform rectangle that shows what the zoom view shows
-      overviewHighlightRectangleColor: 'red',
+      overviewHighlightRectangleColor: '#176e8d',
       // Colour for the zoomed in waveform
-      zoomWaveformColor: 'rgba(0, 225, 128, 1)',
+      zoomWaveformColor: '#cecece',
       // Colour for the overview waveform
-      overviewWaveformColor: '#f7f7f7',
+      overviewWaveformColor: '#cecece',
       // Colour of the play head(move line)
-      playheadColor: 'red',
+      playheadColor: '#df1f1e',
       // Colour of the axis gridlines
-      axisGridlineColor: 'black',
+      axisGridlineColor: '#d8d8d8',
       // Colour of the axis labels
-      axisLabelColor: 'black',
+      axisLabelColor: '#d8d8d8',
+      markerHeight:2,//时间刻度表与边缘的位置差
       // 覆盖在总体波形图上面的矩形宽度
       zoomLevels: [512, 1024, 2048, 4096],
       pointMarkerColor:     '#FF0000', //Color for the point marker
-      inMarkerColor: '#717475',
+      inMarkerColor: '#df1f1e',
 
       // Colour for the out marker of segments
-      outMarkerColor: '#717475',
+      outMarkerColor: '#df1f1e', 
+      outlineColor:"#35c5f7",
+      inlineColor:"#35c5f7",
       /**
        * Colour for the in marker of segments
        */
@@ -1113,10 +1168,10 @@ define(['peaks'], function ( Peaks){
         document.addEventListener('keydown',function(event){
             var e = event || window.event || arguments.callee.caller.arguments[0];
             console.log(e.keyCode);
-            if(e && e.keyCode === 32){
+            /*if(e && e.keyCode === 32){
                 _self.play();
                 return;
-            }
+            }*/
             if(e && e.shiftKey && e.keyCode == 9 ){
                 //_self.tabClick(event,false);
             }else if(e && e.keyCode == 9){ // 按 Tab 
@@ -1167,6 +1222,7 @@ define(['peaks'], function ( Peaks){
   subtitleAxis.subconClick =  function (target, e, ifchageTime) {
        var _index = parseInt(target.attr("data-index"));
        this.changeCurrentIndex(_index,null,ifchageTime);
+       segmentPart.changeMarker(_index);
        target.find("textarea").show();
        target.find(".txt").hide();
   };
@@ -1287,7 +1343,6 @@ define(['peaks'], function ( Peaks){
   
   subtitleAxis.deleteSubtitleByCurrentTime = function(){
       var index = this.findCurrentIndexByCurrentTime(segmentPart.time());
-     
       if(index >= 0){
           var segmentId = this.segments[index].segmentId;
           this.showDeleteNote(segmentId,index,1);
@@ -1352,7 +1407,7 @@ define(['peaks'], function ( Peaks){
       //插入一条dom结构
       this.addLiDom(insertIndex,_newSubtitle);
       this.curIndex = insertIndex;
-      
+      console.log("addSubtitle :"+this.curIndex);
       // if(insertIndex < this.curIndex){
       //    this.curIndex++;
       // }
@@ -1399,6 +1454,7 @@ define(['peaks'], function ( Peaks){
   subtitleAxis.updateSubtitle = function(seg){
      var _li = $("#"+seg.segmentId);//js_alltime
      var _index = parseInt(_li.attr("data-index"));
+     this.curIndex = _index;
      var _oldseg = this.segments[_index];
      /*if(Math.abs(seg.startTime * 1000 - _oldseg.startTime < 500) && Math.abs(seg.endTime * 1000 -_oldseg.endTime) < 500){
         return;
@@ -1472,6 +1528,18 @@ define(['peaks'], function ( Peaks){
        if(_index === this.curIndex){
           return;
        }
+       //当前所在的时间轴是空的时候
+       if(_index === -1){
+          if(this.curIndex >= 0 ){
+             var _li = $(this.lis[this.curIndex]);
+             _li.removeClass("active");
+             _li.find("textarea").hide();
+             _li.find(".txt").show();
+             this.curIndex = -1;
+          }
+          return;
+       }
+       
        if(_index < 0 || _index >= this.subtitles.subtitleItems.length){
           console.log($(this.lis[this.curIndex]).find(".sub-content")[0]);
           $($(this.lis[this.curIndex]).find(".sub-content")[0]).click();
@@ -1642,23 +1710,30 @@ define(['peaks'], function ( Peaks){
   */
   subtitleAxis.playCurrent = function(){
       var _index = this.curIndex;//this.findCurrentIndexByCurrentTime(segmentPart.time());
+      console.log("subtitleAxis.playCurrent:"+this.curIndex);
       //this.curIndex = _index;
       if(_index >=0 && !segmentPart.ifBlank){
           var _startTime =  this.segments[_index].startTime,
               _endTime = this.segments[_index].endTime;
           segmentPart.time(_startTime, this.curIndex);
           segmentPart.setPlayTime(_startTime, _endTime);
+          this.play(false);
           //Control.course.changePlayerTime(_startTime, _endTime); 
-         // Control.course.player.play();
+          //Control.course.player.play();
           //this.changeCurrentIndex(_index);
       }else{
           segmentPart.setPlayTime(-1, -1);
+          this.play();
           //Control.course.changePlayerTime(-1, -1); //去除开始时间和结束时间的限制
           //Control.course.player.play();
       }
   }
 
-  subtitleAxis.play = function(){
+  subtitleAxis.play = function(ifPause){
+      if(ifPause){
+        Control.course.player.pause();
+        return;
+      }
       Control.course.player.play();
   }
   return subtitleAxis;

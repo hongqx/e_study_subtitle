@@ -26,6 +26,7 @@ require([ "subtitleAxis"], function(subtitleAxis) {
          errorCallBack : Control.course.showErrorNote
      };
      Control.subtitleAxis = subtitleAxis.init(segSubtitlsoptions,"subTitleDom");
+     
      return Control;
    }
 

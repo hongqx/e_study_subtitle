@@ -24,14 +24,15 @@
         -moz-box-shadow: 3px 3px 20px #919191;
         -webkit-box-shadow: 3px 3px 20px #919191;
         line-height: 0;
+        /*padding: 10px 0 10px 0;*/
       }
 
       .overview-container {
-        height: 80px;
-        background-color: black;
+        height: 50px;
+        background-color: #000;
       }
       .zoom-container {
-        background-color: #eae4e4;
+        background-color: #000;
       }
 
       #second-waveform-visualiser-container [class*="-container"] {
@@ -93,9 +94,8 @@
             <dl class="module instruction">
                 <dt>流程说明</dt>
                 <dd>1.声波图及上方的时间轴可以左右拖动</dd>
-                <dd>2.双击声波线上空白区域添加一个市场1s的轴</dd>
-                <dd>3.单击声波线上已经完成的时间轴，该轴变为编辑模式，此时拖动交表或者轴的边线可以调整轴时长</dd>
-                <dd>4.拖动蓝色区域可调整当前屏声波图的位置</dd>
+                <dd>2.双击声波线上淡绿色区域添加一个时长1s的轴</dd>
+                <dd>3.拖动时间轴左右红色/灰色的边线，可以调整轴时长</dd>
                 <dd>5.整体调整时间轴请使用App操作</dd>
                 <dd>6.完成任务请至app提交</dd>
             </dl>
@@ -103,7 +103,10 @@
                 <dt>快捷键</dt>
                 <dd>键盘[ ctrl+a ]: 添加一个新轴</dd>
                 <dd>键盘[ ctrl+r ]: 播放当前时间轴内的视频</dd>
+                <dd>键盘[ ctrl+s ]: 暂停播放</dd>
                 <dd>键盘[ ctrl+d ]: 删除当前时间轴</dd>
+                <dd>键盘[ tab ]: 切换到下一条字幕</dd>
+                <dd>键盘[ tab+shift]: 切换到上一条字幕</dd>
             </dl>
         </div>
         <div class="trans-right fl" style="height:767px;">
@@ -112,62 +115,7 @@
            <div class="tranlist" id="subTitleDom">
                <div class="sublistnote" style="display:none;">该视频还没有时间轴字幕哟，赶快去添加吧！！</div>
                <ul class="sublist" >
-                  <!--  <li data-pindex="29" data-index="29">
-                      <div class="subtitle">
-                            <div class="subspan">
-                                <span class="start-time">00:10</span>
-                            </div>
-                            <div class="sub-content">
-                                <div class="txt">Hi everyone, I'm Amy.</div>
-                                <textarea name="" id="" cols="30" rows="10">Hi everyone, I'm Amy.</textarea>
-                            </div>
-                             <div class="subspan">
-                                <span>3WPS</span>
-                                <span>6.Seconds</span>
-                                <span>30word</span>
-                                <span class="delete-icon">——</span>
-                            </div>
-                           
-                      </div>
-                      <div class="buttomline"></div>
-                     </li>
-                     <li class="active" data-pindex="29" data-index="29">
-                      <div class="subtitle">
-                             <div class="subspan">
-                                <span class="start-time">00:10</span>
-                            </div>
-                            <div class="sub-content">
-                                 <div class="txt">Koreanclass101.com Hanna Hanna Hangul</div>
-                                 <textarea name="" id="" cols="30" rows="10">Koreanclass101.com Hanna Hanna Hangul</textarea>
-                            </div>
-                            <div class="subspan">
-                                <span>3WPS</span>
-                                <span>6.Seconds</span>
-                                <span>30word</span>
-                                <span class="delete-icon">——</span>
-                            </div>
-                      </div>
-                      <div class="buttomline"></div>
-                     </li>
-                     <li data-pindex="29" data-index="29">
-                      <div class="subtitle">
-                             <div class="subspan">
-                                <span class="start-time">00:10</span>
-                            </div>
-                            <div class="sub-content">
-                                <div class="txt">and welcome to Hanna Hanna Hangul on Koreanclass101.com</div>
-                                <textarea name="" id="" cols="30" rows="10"></textarea>
-                            </div>
-                            <div class="subspan">
-                                <span class="red-span">7.3WPS</span>
-                                <span>6.Seconds</span>
-                                <span>30word</span>
-                                <span class="delete-icon">——</span>
-                            </div>
-                           
-                      </div>
-                      <div class="buttomline"></div>
-                     </li> -->
+                
                </ul>
                
            </div>

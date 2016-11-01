@@ -209,8 +209,8 @@ videoPlayer.prototype = {
     onSeeked : function (argument) {
        this.showLoading();
     },
-    play : function(){
-       if(!this.startPlay){
+    play : function(ifplay){
+       if(!this.startPlay || ifplay){
          //this.hideControl();
          // if(this.startTime > 0){
          //   this.video.currentTime = this.startTime;
