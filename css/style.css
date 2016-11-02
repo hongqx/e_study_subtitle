@@ -258,6 +258,21 @@ header {
     background-color: #9F9393;
     opacity: .3
 }
+.video-wrap .video-text{
+    position: absolute;
+    width: 100%;
+    bottom: 0;
+    left: 0;
+    background-color: #bdbaba;
+    line-height: 22px;
+    padding: 5px 10px;
+    background-color: rgba(60,60,60,.5);
+    color: #ffffff;
+    word-wrap: break-word;
+    text-align: center;
+    font-size: 12px;
+    box-sizing: border-box;
+}
 
 .module {
     padding-top: 12px
@@ -744,14 +759,26 @@ footer .copyright{
 }
 
 /********************时间轴制作页面css add by hongqx******************/
-.right-top{
+/*.right-top{
    height: 250px;
-}
+}*/
 
 .tranlist {
     position:relative;
     overflow: hidden;
     height: 450px;
+}
+.tranlist .sublistnote {
+    margin: 10px;
+    -webkit-flex: 1;
+    -moz-flex: 1;
+    flex: 1;
+    border: 1px solid #c3c3c3;
+    border-radius: 3px;
+    padding: 30px 10px;
+    text-align: center;
+    color: #b13333;
+    font-size: 14px;
 }
 .sublist li {
     /*padding: 10px 20px 10px 10px;*/

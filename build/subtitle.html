@@ -4,10 +4,10 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
     <meta charset="UTF-8">
-    <title>原文编辑-译学馆在线翻译</title>
+    <title>译学馆-原始字幕打轴</title>
     <link rel="shortcut icon" href="http://gcdp.oss-cn-qingdao.aliyuncs.com/201604/29/1461918506617_4526.ico" type="image/x-icon" />
     <link rel="bookmark" href="http://gcdp.oss-cn-qingdao.aliyuncs.com/201604/29/1461918506617_4526.ico" type="image/x-icon" />
-    <link rel="stylesheet" type="text/css" href="http://m.yxgapp.com/d/mooc/webClient/css/yxgstyle.min.css?_20160707" />
+    <link rel="stylesheet" type="text/css" href="http://m.yxgapp.com/d/mooc/webClient/css/yxgstyle.min.css" /> 
     <style type="text/css">
         #titles {
         font-family: 'Helvetica neue', Helvetica, Arial, sans-serif;
@@ -17,24 +17,31 @@
         margin: 24px auto;
         /*width: 1000px;*/
       }
-
+ 
       .zoom-container,.overview-container{
         box-shadow: 3px 3px 20px #919191;
         margin: 0 0 24px 0;
         -moz-box-shadow: 3px 3px 20px #919191;
         -webkit-box-shadow: 3px 3px 20px #919191;
         line-height: 0;
+        /*padding: 10px 0 10px 0;*/
       }
 
       .overview-container {
-        height: 85px;
-        background-color: black;
+        height: 50px;
+        background-color: #000;
+      }
+      .zoom-container {
+        background-color: #000;
       }
 
       #second-waveform-visualiser-container [class*="-container"] {
         background: #111;
       }
-    </style>
+    </style> 
+    <script type="text/javascript" src="http://m.yxgapp.com/d/threeParty/jquery1_11_3.min.js"></script>
+    <script type="text/javascript" src="http://m.yxgapp.com/d/threeParty/jquery.mCustomScrollbar.concat.min.js"></script>
+
 </head>
 
 <body>
@@ -56,6 +63,7 @@
                     <div class="loading"></div>
                 </div>
                 <div class="video-mask"></div>
+                <div class="video-text" id="js-videotext"></div>
             </div>
             <div class="module">
                 <div class="m-title">视频信息</div>
@@ -84,28 +92,28 @@
                     </div>
                 </div>
             </div>
-            <dl class="module instruction">
-                <dt>流程说明</dt>
-                <dd>1.声波图及上方的时间轴可以左右拖动</dd>
-                <dd>2.双击声波线上空白区域添加一个时长1s的轴</dd>
-                <dd>3.单击声波线上已经完成的时间轴，该轴变为编辑模式，此时拖动交表或者轴的边线可以调整轴时长</dd>
-                <dd>4.拖动蓝色区域可调整当前屏声波图的位置</dd>
-                <dd>5.整体调整时间轴请使用App操作</dd>
-                <dd>6.完成任务请至app提交</dd>
+             <dl class="module instruction">快捷键
+                <dt>快捷键</dt>
+                <dd>键盘[ctrl+r]: 如果当前有焦点，从焦点所在时轴左侧开始播放；如果没有，从屏幕左侧播放</dd>
+                <dd>键盘[ctrl+a]: 在当前位置空白处（无时轴覆盖处）添加一条1秒长新轴</dd>
+                <dd>键盘[ctrl+s]: 暂停当前播</dd>
+                <dd>键盘[ctrl+d]: 删除当前焦点所在时间轴，需确认</dd>
             </dl>
             <dl class="module instruction">
-                <dt>快捷键</dt>
-                <dd>键盘[ ctrl+a ]: 添加一个新轴</dd>
-                <dd>键盘[ ctrl+r ]: 播放当前时间轴内的视频</dd>
-                <dd>键盘[ ctrl+d ]: 删除当前时间轴</dd>
+                <dt>流程说明</dt>
+                <dd>1. 快捷键很重要，请仔细查看上述几个快捷键</dd>
+                <dd>2. 确定视频里的话语起点后，按下添加一条轴，拉动轴的右边界，调整轴的宽度，确保覆盖视频里的一句话。</dd>
+                <dd>3. 为该条轴添加文字内容。</dd>
+                <dd>4. 字幕会随时保存，不用担心丢失。整体完成后，请用APP提交任务。</dd>
             </dl>
         </div>
         <div class="trans-right fl" style="height:767px;">
            <div class="right-top" id="peaks-container">  
            </div>
            <div class="tranlist" id="subTitleDom">
+               <div class="sublistnote" style="display:none;">该视频还没有时间轴字幕哟，赶快去添加吧！！</div>
                <ul class="sublist" >
-                 
+                
                </ul>
                
            </div>
@@ -142,10 +150,9 @@
     <script type="text/javascript">
         requirejs.config({
             paths: {
-              peaks: 'http://m.yxgapp.com/d/threeParty/peaks.min',
               jquery: "http://m.yxgapp.com/d/threeParty/jquery1_11_3.min",
-              segmentPart: 'http://m.yxgapp.com/d/mooc/webClient/js/segmentPart.min',
               mCustomScrollbar : "http://m.yxgapp.com/d/threeParty/jquery.mCustomScrollbar.concat.min",
+              peaks: 'http://m.yxgapp.com/d/threeParty/peaks.min',
               subtitleAxis:"http://m.yxgapp.com/d/mooc/webClient/js/subtitleAxis.min"
             }
         });

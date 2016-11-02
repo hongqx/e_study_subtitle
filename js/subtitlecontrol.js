@@ -1,6 +1,6 @@
 /*!estudysubtitle
  *version 1.1.0
- *2016-10-31  02:16:48
+ *2016-11-02  06:44:54
  *完善提交逻辑，时间轴线和字幕列表联动
  */
 var LocalStorage = {
@@ -308,8 +308,8 @@ videoPlayer.prototype = {
     onSeeked : function (argument) {
        this.showLoading();
     },
-    play : function(){
-       if(!this.startPlay){
+    play : function(ifplay){
+       if(!this.startPlay || ifplay){
          //this.hideControl();
          // if(this.startTime > 0){
          //   this.video.currentTime = this.startTime;
