@@ -99,6 +99,7 @@ define(['peaks'], function ( Peaks){
           this.endTime = -1;
           clearInterval( this.interval);
           this.interval = null;
+          this.fIndex = -1;
           this.peaksInstance.segments.changeCurrentMarker(this.curIndex);
           Control.subtitleAxis.changeCurrentIndex(-1, true);
       }
@@ -144,6 +145,7 @@ define(['peaks'], function ( Peaks){
         }else {
             this.ifBlank = true;
             Control.subtitleAxis.changeCurrentIndex(-1, true);
+            this.fIndex = -1;
             this.startTime = -1;
             this.endTime = -1;
             //this.peaksInstance.segments.changeCurrentMarker(this.curIndex);
@@ -540,8 +542,8 @@ define(['peaks'], function ( Peaks){
    * @return {[type]} [description]
    */
   subtitleAxis.checkIfDatData = function(){
-      //var url = 'http://alicdnsub.yxgapp.com/waveMap/'+this.options.videoId+'.dat';
-      var url = 'http://m.yxgapp.com/waveMap/'+this.options.videoId+'.dat';
+      var url = 'http://alicdnsub.yxgapp.com/waveMap/'+this.options.videoId+'.dat';
+      //var url = 'http://m.yxgapp.com/waveMap/'+this.options.videoId+'.dat';
       var _self = this;
       getAjax(url , {}, function(data){
          if(data.status === 404 || data.status === 503){
@@ -883,8 +885,8 @@ define(['peaks'], function ( Peaks){
       container: document.getElementById('peaks-container'),
       mediaElement: document.querySelector('video'),
       dataUri: {
-         arraybuffer: 'http://m.yxgapp.com/waveMap/'+this.options.videoId+'.dat'
-        /*arraybuffer: 'http://alicdnsub.yxgapp.com/waveMap/'+this.options.videoId+'.dat'/*,
+         //arraybuffer: 'http://m.yxgapp.com/waveMap/'+this.options.videoId+'.dat'
+        arraybuffer: 'http://alicdnsub.yxgapp.com/waveMap/'+this.options.videoId+'.dat'/*,
         json: 'http://m.yxgapp.com/wave_map_file/'+this.options.videoId+'.json'*/
       },
       keyboard: false,
@@ -987,6 +989,8 @@ define(['peaks'], function ( Peaks){
 
       this.container.append(this.ulDom);
       this.lis = $(this.container).find("li");
+      var _height = ((this.lis.length + 1) * 150) + "px";
+      $(this.ulDom).css("height",_height);
       if(_len === 0){
          $(this.container.find(".sublistnote")).show();
          $(this.ulDom).hide();
@@ -994,14 +998,14 @@ define(['peaks'], function ( Peaks){
       try{
           $("#"+this.containerId).mCustomScrollbar({
               theme:"my-theme",
-              mouseWheel:{scrollAmount:131},
+              mouseWheel:{scrollAmount:131}
           });
       }catch(e){
           var _self = this;
           setTimeout(function(){
             $("#"+_self.containerId).mCustomScrollbar({
                 theme:"my-theme",
-                mouseWheel:{scrollAmount:131},
+                mouseWheel:{scrollAmount:131}
             });
           },500);
       }
@@ -1046,6 +1050,8 @@ define(['peaks'], function ( Peaks){
       }
       this.lis = $(this.container).find("li");
       this.updateDomIndex();
+      var _height = (150 * (this.lis.length + 1))+"px";
+      $(this.ulDom).css("height",_height);
       this.changeCurrentIndex(index,null,true);
   };
   
@@ -1064,6 +1070,8 @@ define(['peaks'], function ( Peaks){
       }
       this.lis = $(this.container).find("li");
       this.updateDomIndex();
+      var _height = (150 * (this.lis.length + 1))+"px";
+      $(this.ulDom).css("height",_height);
       if(this.lis.length === 0){
           console.log(this.container.find(".sublistnote"));
          $(this.container.find(".sublistnote")).show();
@@ -1077,7 +1085,7 @@ define(['peaks'], function ( Peaks){
    * @return {String}       拼接好的时间轴数据
    */
   subtitleAxis.getTimeModel = function(_time){
-        var _secondNum = _time.toFixed(0);
+        var _secondNum = _time.toFixed(1);
         var _hours = parseInt(_secondNum / 3600);
         var _minutes = parseInt((_secondNum - _hours * 3600) / 60);
         _minutes = _minutes > 9 ? _minutes : ("0"+_minutes);
@@ -1213,17 +1221,34 @@ define(['peaks'], function ( Peaks){
             }*/
             if(e.ctrlKey){
                var keycode =  e.keyCode ;
+               if(keycode === 83){
+                  event.returnValue = false;
+                  _self.play();
+                  return;
+               }
                switch(keycode){
                   case 65:
+                     if(_self.clientY >= 326){
+                        break;
+                        return;
+                     }
+                     event.returnValue = false;
                      _self.addSubtitleAxis();
                      break;
                   case 82:
+                     if(_self.clientY && _self.clientY < 70){
+                        break;
+                        return;
+                     }
+                     event.returnValue = false;
                      _self.playCurrent();
                      break;
                   case 68:
+                      event.returnValue = false;
                       _self.deleteSubtitleCurrent();
                       break;
                   case 83:
+                      event.returnValue = false;
                       _self.play();
                       break;
                   default:
@@ -1232,6 +1257,13 @@ define(['peaks'], function ( Peaks){
             }
             return false;
         });
+        if(window.navigator.userAgent.indexOf("Windows") > -1){
+          document.addEventListener("mouseover",function(event){
+              console.log('x:'+event.clientX+'||y:'+event.clientY);
+              _self.clientY = event.clientY;
+              _self.clientX = event.clientX;
+          });
+        }
   };
   
   /**
@@ -1569,7 +1601,6 @@ define(['peaks'], function ( Peaks){
    * @return {[type]} [description]
    */
   subtitleAxis.changeCurrentIndex = function(_index, ifClick, ifchageTime){
-       console.log("change currentTime："+_index);
        if(_index === this.curIndex && _index !== -1 && !ifchageTime){
           this.showCurVideotext(this.subtitles.subtitleItems[this.curIndex].content);
           return;
