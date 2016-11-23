@@ -1,6 +1,7 @@
 /**
  * 播放组件
  * @type {Object}
+ * 2016-11-23 增加onError中重新加入src的逻辑
  */
 function videoPlayer(containerId){
     this.containerId = containerId;
@@ -201,7 +202,14 @@ videoPlayer.prototype = {
        this.options.onUpdate ? this.options.onUpdate(this.video.currentTime) : "";
     },
     onError : function(){
-        alert("the video play is error");
+        if(this.errorNum < 3){
+           this.errorNum++;
+           this.video.src = this.data.url;
+           this.video.currentTime = this.currentTime;
+           this.video.play();
+        }else{
+          alert("the video play is error");
+        }
     },
     onSeeking : function(argument) {
       //console.log("onSeeking");

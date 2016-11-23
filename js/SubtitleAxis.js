@@ -607,17 +607,22 @@ define(['peaks'], function ( Peaks){
    * @return {[type]} [description]
    */
   subtitleAxis.downLoadSubTitlesCallBack = function(data){
-      var _subtitle = null;
-      if(data.result && data.subtitle){
-           //this.mergeLocalItems(data.subtitle);
-          _subtitle = data.subtitle;
+      var _subtitle = {};
+      if(!data.result){
+          showNote("视频字幕数据获取失败，请检查网络状态或者回到二维码页面重新扫码");
+          return;
       }
+      _subtitle = data.subtitle ||{};
+
+      //对下载下来的数据进行排序
       if(_subtitle.subtitleItems.length > 0){
+
           _subtitle.subtitleItems = this.sort(_subtitle.subtitleItems);
       }
+
       //处理规范下载的字幕数据
       var _subtitles =  this.dealLoadSubTitle(_subtitle);
-      
+
       //如果存在本地数据 进行本地数据和线上数据的合并处理
       if( this.localSubtitles ){
 
@@ -864,6 +869,9 @@ define(['peaks'], function ( Peaks){
       }
   };
   
+  subtitleAxis.mergeLocalItems1 = function(subtitles, localSubtitles){
+
+  };
   /**
    * 初始化时间轴
    * @return {[type]} [description]
@@ -1085,18 +1093,17 @@ define(['peaks'], function ( Peaks){
    * @return {String}       拼接好的时间轴数据
    */
   subtitleAxis.getTimeModel = function(_time){
-        var _secondNum = _time.toFixed(1);
+        var _secondNum = Number(_time.toFixed(1));
         var _hours = parseInt(_secondNum / 3600);
         var _minutes = parseInt((_secondNum - _hours * 3600) / 60);
+         _secondNum = (_secondNum - _hours * 3600 - _minutes * 60).toFixed(1) ;
         _minutes = _minutes > 9 ? _minutes : ("0"+_minutes);
-        _secondNum = _secondNum % 60;
         _secondStr = _secondNum > 9 ? _secondNum  : ("0"+_secondNum);
         if(_hours > 0){
           return  _hours+":"+_minutes+":"+_secondStr;
         }
         return _minutes+":"+_secondStr;
   };
-  
   /**
    * 更新dom中的data-index
    * @type {[type]}
@@ -1236,10 +1243,10 @@ define(['peaks'], function ( Peaks){
                      _self.addSubtitleAxis();
                      break;
                   case 82:
-                     if(_self.clientY && _self.clientY < 70){
+                     /*if(_self.clientY && _self.clientY < 70){
                         break;
                         return;
-                     }
+                     }*/
                      event.returnValue = false;
                      _self.playCurrent();
                      break;
@@ -1259,7 +1266,6 @@ define(['peaks'], function ( Peaks){
         });
         if(window.navigator.userAgent.indexOf("Windows") > -1){
           document.addEventListener("mouseover",function(event){
-              console.log('x:'+event.clientX+'||y:'+event.clientY);
               _self.clientY = event.clientY;
               _self.clientX = event.clientX;
           });
@@ -1275,9 +1281,6 @@ define(['peaks'], function ( Peaks){
      if(_nextindex < 0 || _nextindex >= this.subtitles.subtitleItems.length){
         return false;
       }
-     // if(_nextindex < 0 || _nextindex > this.subtitles.subtitleItems.length){
-     //    return ;
-     // }
      this.changeCurrentIndex(_nextindex,true);
   };
   /**
@@ -1305,7 +1308,7 @@ define(['peaks'], function ( Peaks){
         //console.log("enBlur");
         this.edit = false;
         this.editType = null;
-        val =target.val();
+        val = target.val();
         target.hide();
         var txtDom = target.siblings('.txt');
         txtDom.html(val).show();
@@ -1314,7 +1317,7 @@ define(['peaks'], function ( Peaks){
         var _basesubtitle = this.subtitles.subtitleItems[_index];//this.data.subtitleItems[_index].baseSubtitleItem;
         if(_basesubtitle.content !== val && val !== ""){
             _basesubtitle.content = val;
-            this.subtitles.timestamp  = _basesubtitle.updateTime =  parseInt(new Date().getTime()/1000);
+            this.subtitles.timeStamp  = _basesubtitle.updateTime =  parseInt(new Date().getTime()/1000);
             //_basesubtitle.autoCaption = 0;
             _basesubtitle.username = this.options.username;
             _basesubtitle.userNickname = this.options.nickname;
