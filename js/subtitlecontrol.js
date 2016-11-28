@@ -1,6 +1,6 @@
 /*!estudysubtitle
  *version 1.1.0
- *2016-11-07  06:15:46
+ *2016-11-28  04:30:41
  *完善提交逻辑，时间轴线和字幕列表联动
  */
 var LocalStorage = {
@@ -100,6 +100,7 @@ var Cookie = {
 /**
  * 播放组件
  * @type {Object}
+ * 2016-11-23 增加onError中重新加入src的逻辑
  */
 function videoPlayer(containerId){
     this.containerId = containerId;
@@ -300,7 +301,14 @@ videoPlayer.prototype = {
        this.options.onUpdate ? this.options.onUpdate(this.video.currentTime) : "";
     },
     onError : function(){
-        alert("the video play is error");
+        if(this.errorNum < 3){
+           this.errorNum++;
+           this.video.src = this.data.url;
+           this.video.currentTime = this.currentTime;
+           this.video.play();
+        }else{
+          alert("the video play is error");
+        }
     },
     onSeeking : function(argument) {
       //console.log("onSeeking");

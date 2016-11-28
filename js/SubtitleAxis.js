@@ -590,6 +590,7 @@ define(['peaks'], function ( Peaks){
           };
           var _url  = this.urls.doload;
           _url = _url.replace("{@videoId}",this.options.videoId);
+          _url += "?_t=" + new Date().getTime();
           getAjax(_url, {}, "downLoadSubTitlesCallBack");
 
       //检测到本地有存储的字幕数据，先判断线上的字幕是否有更新
@@ -626,7 +627,7 @@ define(['peaks'], function ( Peaks){
       //如果存在本地数据 进行本地数据和线上数据的合并处理
       if( this.localSubtitles ){
 
-         this.mergeLocalItems(_subtitles);
+         this.mergeLocalItems1(_subtitles);
 
       }else{
 
@@ -696,7 +697,7 @@ define(['peaks'], function ( Peaks){
 
             }else{
                  //线上字幕没有更新,直接使用本地的字幕
-                this.mergeLocalItems();
+                this.mergeLocalItems1();
 
                 this.startInitContent();
             }
@@ -869,8 +870,52 @@ define(['peaks'], function ( Peaks){
       }
   };
   
-  subtitleAxis.mergeLocalItems1 = function(subtitles, localSubtitles){
+  subtitleAxis.mergeLocalItems1 = function(subtitles){
+      this.segments = [];
+      var _timeStamp  = subtitles.timeStamp,
+          _localTimeStamp = this.localSubtitles.timeStamp;
+      var _newSubtitleItems ,_oldSubtitleItems;
+      if(_timeStamp > _localTimeStamp){
+         this.subtitles = subtitles;
+         _newSubtitleItems = subtitles.subtitleItems;
+         _oldSubtitleItems = this.localSubtitles.subtitleItems;
+      }else{
+         this.subtitles = this.localSubtitles;
+         _newSubtitleItems = this.localSubtitles.subtitleItems;
+         _oldSubtitleItems = subtitles.subtitleItems;
+      }
 
+      var _len = _newSubtitleItems.length, i = 0, j = 0;
+
+      for( ;i < _len ;i++){
+          var _newItem = _newSubtitleItems[i];
+          //var j = 0, _nLen = subtitles.subtitleItems.length;
+
+          for(; j < _len ;j++){
+
+              var _item = _oldSubtitleItems[j];
+              if(_newItem.subtitleItemId === _item.subtitleItemId || (_newItem.content !=="" && _newItem.content === _item.content )
+                  || (_newItem.startTime === _item.startTime && _newItem.endTime === _item.endTime)){
+                if(_newItem.updateTime < _item.updateTime){
+                    _newItem = _item;
+                }else if(_newItem.subtitleItemId.indexOf("b_") > 0){
+                    _newItem.subtitleItemId = _item.subtitleItemId;
+                }
+                break;
+              }
+          }
+          var _newseg = {};
+          _newseg.startTime = _newItem.startTime < 0 ? 0 : _newItem.startTime / 1000;
+          _newseg.endTime = _newItem.endTime / 1000;
+    
+          _newseg.editable = true;
+          _newseg.id = _newItem.subtitleItemId;
+          _newseg.segmentId = _newItem.subtitleItemId;
+          _newseg.overview = "Kinetic.Group";
+          _newseg.zoom = "Kinetic.Group";
+          this.segments.push(_newseg);
+      }
+       this.subtitles.subtitleItems = _newSubtitleItems;
   };
   /**
    * 初始化时间轴
@@ -1096,7 +1141,10 @@ define(['peaks'], function ( Peaks){
         var _secondNum = Number(_time.toFixed(1));
         var _hours = parseInt(_secondNum / 3600);
         var _minutes = parseInt((_secondNum - _hours * 3600) / 60);
-         _secondNum = (_secondNum - _hours * 3600 - _minutes * 60).toFixed(1) ;
+         _secondNum = Number((_secondNum - _hours * 3600 - _minutes * 60).toFixed(1));
+         if(_secondNum === parseInt(_secondNum)){
+            _secondNum = parseInt(_secondNum);
+         }
         _minutes = _minutes > 9 ? _minutes : ("0"+_minutes);
         _secondStr = _secondNum > 9 ? _secondNum  : ("0"+_secondNum);
         if(_hours > 0){
@@ -1485,7 +1533,7 @@ define(['peaks'], function ( Peaks){
       //插入一条dom结构
       this.addLiDom(insertIndex,_newSubtitle);
       this.curIndex = insertIndex;
-      console.log("addSubtitle :"+this.curIndex);
+      //console.log("addSubtitle :"+this.curIndex);
       // if(insertIndex < this.curIndex){
       //    this.curIndex++;
       // }
